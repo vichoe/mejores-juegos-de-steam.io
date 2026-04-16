@@ -25,26 +25,58 @@ function inicializarGrafico() {
                 {
                     label: 'Juego 1',
                     data: [0, 0, 0, 0, 0],
-                    valoresReales: [0, 0, 0, 0, 0], 
-                    backgroundColor: 'rgba(54, 30, 99, 0.2)',
-                    borderColor: '#361e63',
-                    pointBackgroundColor: '#361e63',
-                    pointRadius: 5
+                    valoresReales: [0, 0, 0, 0, 0],
+                    backgroundColor: 'rgba(245, 197, 24, 0.15)',
+                    borderColor: '#f5c518',
+                    pointBackgroundColor: '#f5c518',
+                    pointBorderColor: '#f5c518',
+                    pointRadius: 6,
+                    borderWidth: 2
                 },
                 {
                     label: 'Juego 2',
                     data: [0, 0, 0, 0, 0],
-                    valoresReales: [0, 0, 0, 0, 0], 
-                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                    borderColor: '#ff6384',
-                    pointBackgroundColor: '#ff6384',
-                    pointRadius: 5
+                    valoresReales: [0, 0, 0, 0, 0],
+                    backgroundColor: 'rgba(0, 210, 200, 0.15)',
+                    borderColor: '#00d2c8',
+                    pointBackgroundColor: '#00d2c8',
+                    pointBorderColor: '#00d2c8',
+                    pointRadius: 6,
+                    borderWidth: 2
                 }
             ]
         },
         options: {
-            scales: { r: { min: 0, max: 100 } },
+            scales: {
+                r: {
+                    min: 0,
+                    max: 100,
+                    ticks: {
+                        color: 'rgba(255,255,255,0.5)',
+                        backdropColor: 'transparent',
+                        font: { size: 10 },
+                        stepSize: 20
+                    },
+                    grid: {
+                        color: 'rgba(255,255,255,0.12)'
+                    },
+                    angleLines: {
+                        color: 'rgba(255,255,255,0.2)'
+                    },
+                    pointLabels: {
+                        color: '#d4c8f0',
+                        font: { size: 13, weight: '600' }
+                    }
+                }
+            },
             plugins: {
+                legend: {
+                    labels: {
+                        color: '#e8e0f5',
+                        font: { size: 13 },
+                        usePointStyle: true
+                    }
+                },
                 tooltip: {
                     callbacks: {
                         label: function(context) {
@@ -194,3 +226,16 @@ function configurarAutocompletado() {
 }
 
 cargarDatos();
+
+// Seleccionamos los elementos de la página
+const botonToggle = document.getElementById('toggleMenu');
+const sidebar = document.getElementById('miSidebar');
+const body = document.body;
+
+// Le decimos que escuche cada vez que hacemos click en el botón
+botonToggle.addEventListener('click', function() {
+    // La función toggle pone la clase si no está, y la quita si ya está
+    sidebar.classList.toggle('cerrado');
+    body.classList.toggle('expandido');
+});
+

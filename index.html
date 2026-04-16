@@ -5,11 +5,30 @@
   <meta charset="utf-8">
   <title>Mejores Juegos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="estilo.css">
   <link rel="icon" type="image/png" href="INFOVIS.png">
 </head>
 
 <body>
+
+  <button class="menu-btn" id="toggleMenu">☰</button>
+
+  <nav class="sidebar" id="miSidebar">
+    <div class="sidebar-header">
+      <img src="INFOVIS.png" alt="Logo" class="sidebar-logo">
+      <h2>INFOVIS</h2>
+    </div>
+    <ul class="nav-links">
+      <li><a href="index.html" class="activo">🏠 Inicio</a></li>
+      <li><a href="subpagina1.html">🎮 Subpágina 1</a></li>
+      <li><a href="subpagina2.html">📊 Subpágina 2</a></li>
+      <li><a href="subpagina3.html">⭐ Subpágina 3</a></li>
+    </ul>
+  </nav>
+
   <header class="encabezado">
     <img src="INFOVIS.png" alt="Icono" class="icono">
     <h1>Mejores Juegos</h1>
@@ -17,30 +36,34 @@
 
   <p>Esta página web es una página HTML válida.</p>
 
-<main class="contenido">
+  <main class="contenido">
     <h2>Comparar Juegos:</h2>
-    
+
     <div class="contenedor-comparacion">
-      
+
       <div class="grupo-input autocompletado-contenedor">
         <label for="juego1">Juego 1:</label>
         <input type="text" id="juego1" placeholder="Ej: Elden Ring" autocomplete="off">
-        <ul id="listaJuego1" class="lista-sugerencias"></ul> </div>
+        <ul id="listaJuego1" class="lista-sugerencias"></ul>
+      </div>
 
       <div class="grupo-input autocompletado-contenedor">
         <label for="juego2">Juego 2:</label>
         <input type="text" id="juego2" placeholder="Ej: Dead by Daylight" autocomplete="off">
-        <ul id="listaJuego2" class="lista-sugerencias"></ul> </div>
+        <ul id="listaJuego2" class="lista-sugerencias"></ul>
+      </div>
 
       <button id="btnComparar">Comparar</button>
     </div>
+
     <div class="contenedor-grafico">
-        <canvas id="graficoRadar"></canvas>
+      <canvas id="graficoRadar"></canvas>
     </div>
+
     <h2>Mejores Juegos:</h2>
     <p class="hola">top 1: Dead by Daylight</p>
-
   </main>
-<script src="logica.js"></script>
+
+  <script src="logica.js"></script>
 </body>
 </html>

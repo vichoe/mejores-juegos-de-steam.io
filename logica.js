@@ -20,7 +20,7 @@ function inicializarGrafico() {
     miGrafico = new Chart(ctx, {
         type: 'radar',
         data: {
-            labels: ['Precio', 'Tiempo Jugado', 'Positivas', 'Negativas', 'Dueños'],
+            labels: ['Precio', 'Tiempo Jugado Promedio', 'Reseñas Positivas', 'Reseñas Negativas', 'Dueños Aproximados'],
             datasets: [
                 {
                     label: 'Juego 1',

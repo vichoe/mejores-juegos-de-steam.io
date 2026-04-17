@@ -20,7 +20,7 @@ function inicializarGrafico() {
     miGrafico = new Chart(ctx, {
         type: 'radar',
         data: {
-            labels: ['Precio', 'Tiempo Jugado Promedio', 'Reseñas Positivas', 'Reseñas Negativas', 'Dueños Aproximados'],
+            labels: ['Precio', 'Horas Jugadas (2 semanas)', 'Reseñas Positivas', 'Reseñas Negativas', 'Dueños Aproximados'],
             datasets: [
                 {
                     label: 'Juego 1',
@@ -118,7 +118,7 @@ function actualizarComparacion() {
 
     const v1 = juego1 ? [
         juego1.Price || 0,
-        juego1["Average playtime forever"] || 0,
+        juego1["Average playtime two weeks"] || 0, 
         juego1.Positive || 0,
         juego1.Negative || 0,
         juego1.Owners_Numeric || 0
@@ -126,7 +126,7 @@ function actualizarComparacion() {
 
     const v2 = juego2 ? [
         juego2.Price || 0,
-        juego2["Average playtime forever"] || 0,
+        juego2["Average playtime two weeks"] || 0, 
         juego2.Positive || 0,
         juego2.Negative || 0,
         juego2.Owners_Numeric || 0

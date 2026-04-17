@@ -6,7 +6,7 @@ async function cargarDatos() {
         const respuesta = await fetch('datos_radar.json');
         datosJuegos = await respuesta.json();
         inicializarGrafico();
-        configurarBoton(); 
+        // configurarBoton(); 
         configurarBuscador(); 
         configurarAutocompletado();
         console.log("¡Datos cargados y listos para Cara a Cara!");
@@ -155,7 +155,6 @@ function actualizarComparacion() {
         (v2[4] / maxOwners) * 100
     ];
 
-    // 5. Inyectamos los datos al gráfico
     miGrafico.data.datasets[0].data = dibujo1;
     miGrafico.data.datasets[0].valoresReales = v1;
     miGrafico.data.datasets[0].label = juego1 ? juego1.Name : 'Juego 1';
@@ -172,9 +171,9 @@ function configurarBuscador() {
     document.getElementById('juego2').addEventListener('input', actualizarComparacion);
 }
 
-function configurarBoton() {
-    document.getElementById('btnComparar').addEventListener('click', actualizarComparacion);
-}
+//function configurarBoton() {
+//    document.getElementById('btnComparar').addEventListener('click', actualizarComparacion);
+//}
 
 function crearDropdown(idInput, idLista) {
     const input = document.getElementById(idInput);

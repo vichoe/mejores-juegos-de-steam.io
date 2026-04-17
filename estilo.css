@@ -1,235 +1,149 @@
+:root {
+  --bg-color: #0b0e14;
+  --card-bg: rgba(26, 28, 44, 0.6);
+  --accent-gold: #f5c518;
+  --accent-cyan: #00f2ff;
+  --text-main: #e0e0e0;
+  --border-glass: rgba(255, 255, 255, 0.1);
+}
+
 body {
   margin: 0;
-  font-family: Georgia, 'Times New Roman', Times, serif, Helvetica, sans-serif;
+  background-color: var(--bg-color);
+  background-image: radial-gradient(circle at 50% 50%, #1a1c2c 0%, #0b0e14 100%);
+  color: var(--text-main);
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
 }
 
 .encabezado {
-  background-color: #361e63;
-  padding: 15px 20px;
-  padding-left: 70px; /* espacio fijo para el botón ☰ que siempre está encima */
+  background: rgba(11, 14, 20, 0.8);
+  backdrop-filter: blur(10px);
+  padding: 15px 40px;
   display: flex;
   align-items: center;
-  gap: 20px;
-  border-bottom: 2px solid #f5c518;
-  transition: padding-left 0.3s ease;
-}
-
-/* Cuando el sidebar está abierto, el header ya está empujado por margin-left del body */
-/* así que podemos reducir el padding-left al mínimo */
-body:not(.expandido) .encabezado {
-  padding-left: 20px;
+  justify-content: center;
+  border-bottom: 1px solid var(--accent-gold);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
 .icono {
-    width: 50px;
-    height: 50px;
-    object-fit: contain;
+  width: 40px;
+  height: 40px;
+  filter: drop-shadow(0 0 5px var(--accent-gold));
 }
 
 h1 {
-  margin: 0; 
-  color: #ffffff; 
+  margin: 0;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: white;
+  font-size: 1.8rem;
+}
+
+.contenido {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
 }
 
 .contenido h2 {
+  font-family: 'Rajdhani', sans-serif;
   text-align: center;
+  font-size: 1.5rem;
+  margin-bottom: 30px;
+  color: var(--accent-gold);
 }
 
+/* Contenedores de Entrada */
 .contenedor-comparacion {
-  display: flex; 
-  justify-content: center; 
-  gap: 40px; 
-  margin-top: 20px; 
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  margin-bottom: 50px;
 }
 
 .grupo-input {
+  background: var(--card-bg);
+  padding: 25px;
+  border-radius: 15px;
+  border: 1px solid var(--border-glass);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   display: flex;
-  flex-direction: column; 
-  align-items: center; 
-  font-weight: bold; 
-  color: #333333;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.grupo-input:hover {
+  transform: translateY(-5px);
+  border-color: var(--accent-gold);
+}
+
+.grupo-input label {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .grupo-input input {
-  margin-top: 8px; 
-  padding: 10px; 
-  border: 2px solid #d3d3d3; 
-  border-radius: 8px; 
-  font-family: inherit; 
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-glass);
+  color: white;
+  padding: 12px 15px;
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.3s ease;
 }
 
-.hola {
-  text-align: center;
+.grupo-input input:focus {
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 10px rgba(245, 197, 24, 0.2);
 }
 
+/* Gráfico */
 .contenedor-grafico {
-    width: 700px;       /* más grande */
-    height: 700px;      /* importante para radar */
-    margin: 40px auto;
-}
-.autocompletado-contenedor {
-  position: relative;
+  background: var(--card-bg);
+  padding: 40px;
+  border-radius: 20px;
+  border: 1px solid var(--border-glass);
+  max-width: 800px;
+  margin: 0 auto;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
 }
 
+/* Sugerencias Autocompletado */
 .lista-sugerencias {
   position: absolute;
-  top: 100%; 
+  top: 100%;
   left: 0;
-  width: 100%; 
-  background-color: #ffffff;
-  border: 2px solid #361e63;
-  border-top: none; 
-  border-radius: 0 0 8px 8px; 
-  max-height: 200px; 
+  right: 0;
+  background: #1a1c2c;
+  border: 1px solid var(--accent-gold);
+  border-radius: 0 0 10px 10px;
+  max-height: 250px;
   overflow-y: auto;
-  margin: 0;
-  padding: 0;
-  list-style: none; 
-  z-index: 100; 
-  display: none; 
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  z-index: 100;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  display: none;
 }
 
 .lista-sugerencias li {
-  padding: 10px;
+  padding: 12px 15px;
   cursor: pointer;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 14px;
+  border-bottom: 1px solid var(--border-glass);
+  transition: background 0.2s;
 }
 
 .lista-sugerencias li:hover {
-  background-color: #361e63;
-  color: white;
+  background: var(--accent-gold);
+  color: black;
   font-weight: bold;
-}
-
-/* =========================================
-   ESTILOS DEL NAVBAR LATERAL (SIDEBAR)
-   ========================================= */
-
-.sidebar {
-    height: 100vh;
-    width: 250px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    background-color: #1a0e33;
-    border-right: 1px solid #5a3a8a;
-    padding-top: 0;
-    box-shadow: 4px 0 15px rgba(0,0,0,0.4);
-    display: flex;
-    flex-direction: column;
-}
-
-.sidebar-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 20px 20px 16px;
-    border-bottom: 1px solid #5a3a8a;
-}
-
-.sidebar-logo {
-    width: 36px;
-    height: 36px;
-    object-fit: contain;
-    flex-shrink: 0;
-}
-
-.sidebar-header h2 {
-    color: #f5c518;
-    margin: 0;
-    font-family: sans-serif;
-    font-size: 20px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-}
-
-.nav-links {
-    list-style-type: none; /* Le quita las viñetas feas a la lista */
-    padding: 0;
-    margin: 0;
-}
-
-.nav-links li {
-    width: 100%;
-}
-
-.nav-links a {
-    display: block; /* Hace que todo el rectángulo sea clickeable, no solo el texto */
-    padding: 15px 30px;
-    color: #d2dae2;
-    text-decoration: none; /* Quita el subrayado clásico de los links */
-    font-family: sans-serif;
-    font-size: 18px;
-    transition: all 0.3s ease; /* Transición suave para el hover */
-}
-
-/* Efecto al pasar el mouse por las opciones */
-.nav-links a:hover {
-    background-color: #361e63; /* Un tonito verde/azulado al pasar el mouse */
-    color: #f5c518;
-    padding-left: 40px; /* Hace un pequeño salto hacia la derecha, se ve muy pro */
-}
-
-/* IMPORTANTE: Empuja el resto de tu página para que el menú no lo tape */
-body {
-    margin-left: 250px; /* Debe ser igual al width de tu .sidebar */
-}
-/* Le damos un movimiento suave al sidebar y al body */
-.sidebar {
-    transition: transform 0.3s ease;
-    z-index: 999; /* Asegura que el menú esté por encima de los gráficos */
-}
-
-body {
-    transition: margin-left 0.3s ease;
-}
-
-/* --- CLASES NUEVAS PARA OCULTAR/MOSTRAR --- */
-body {
-  background-color: #0f0a1f;
-}
-
-/* Esta clase esconderá el menú desplazándolo hacia la izquierda */
-.sidebar.cerrado {
-    transform: translateX(-250px); 
-}
-
-/* Esta clase le quitará el margen al body para que el contenido ocupe toda la pantalla */
-body.expandido {
-    margin-left: 0;
-}
-
-/* --- ESTILO DEL BOTÓN --- */
-.menu-btn {
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    z-index: 1000; /* El botón siempre debe estar visible por encima de todo */
-    background-color: #361e63;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    cursor: pointer;
-    font-size: 20px;
-    border-radius: 5px;
-    transition: background-color 0.3s;
-}
-
-.menu-btn:hover {
-    background-color: #4a2880;
-}
-/* Link activo en el sidebar */
-.nav-links a.activo {
-    background-color: #361e63;
-    color: #f5c518;
-    border-left: 3px solid #f5c518;
-    font-weight: bold;
-}
-
-canvas {
-    width: 100% !important;
-    height: 100% !important;
 }

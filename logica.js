@@ -226,14 +226,11 @@ function configurarAutocompletado() {
 
 cargarDatos();
 
-// Seleccionamos los elementos de la página
 const botonToggle = document.getElementById('toggleMenu');
 const sidebar = document.getElementById('miSidebar');
 const body = document.body;
 
-// Le decimos que escuche cada vez que hacemos click en el botón
 botonToggle.addEventListener('click', function() {
-    // La función toggle pone la clase si no está, y la quita si ya está
     sidebar.classList.toggle('cerrado');
     body.classList.toggle('expandido');
 });

@@ -5,45 +5,115 @@
   <meta charset="utf-8">
   <title>Mejores Juegos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="estilo.css">
   <link rel="icon" type="image/png" href="INFOVIS.png">
 </head>
 
 <body>
   <header class="encabezado">
-    <img src="INFOVIS.png" alt="Icono" class="icono">
-    <h1>Mejores Juegos</h1>
+    <div class="marca">
+      <img src="INFOVIS.png" alt="Icono" class="icono">
+      <h1>Mejores Juegos</h1>
+    </div>
+
+    <nav class="navbar">
+      <button class="nav-btn activo" onclick="mostrarSeccion('inicio', this)">Inicio</button>
+
+      <div class="dropdown">
+        <button class="nav-btn">Gráficos ▾</button>
+        <div class="dropdown-menu">
+          <button onclick="mostrarSeccion('graficos', this)">Ver gráficos</button>
+          <button onclick="mostrarSeccion('ranking', this)">Ranking</button>
+        </div>
+      </div>
+
+      <button class="nav-btn" onclick="mostrarSeccion('comparar', this)">Comparar juegos</button>
+    </nav>
   </header>
 
-
   <main class="contenido">
-    <h2>Comparar Juegos:</h2>
 
-    <div class="contenedor-comparacion">
+    <!-- PÁGINA DE INICIO -->
+    <section id="inicio" class="pagina activa">
+      <div class="hero">
+        <h2>Bienvenida a Mejores Juegos</h2>
+        <p>
+          Este proyecto permite analizar videojuegos usando datos como precio,
+          horas jugadas, reseñas positivas, reseñas negativas y cantidad aproximada
+          de dueños.
+        </p>
 
-      <div class="grupo-input autocompletado-contenedor">
-        <label for="juego1">Juego 1:</label>
-        <input type="text" id="juego1" placeholder="Ej: Elden Ring" autocomplete="off">
-        <ul id="listaJuego1" class="lista-sugerencias"></ul>
+        <p>
+          El objetivo es comparar juegos de forma visual para entender mejor cuáles
+          destacan en popularidad, actividad y valoración por los usuarios.
+        </p>
+
+        <button class="boton-principal" onclick="mostrarSeccion('comparar')">
+          Ir a comparar juegos
+        </button>
+      </div>
+    </section>
+
+    <!-- PÁGINA DE GRÁFICOS -->
+    <section id="graficos" class="pagina">
+      <h2>Gráficos del proyecto</h2>
+
+      <div class="tarjetas-graficos">
+        <div class="tarjeta">
+          <h3>Top juegos por reseñas positivas</h3>
+          <p>Aquí puedes poner un gráfico de barras con los juegos mejor evaluados.</p>
+        </div>
+
+        <div class="tarjeta">
+          <h3>Juegos con más dueños</h3>
+          <p>Aquí puedes poner un gráfico que muestre los juegos más populares.</p>
+        </div>
+
+        <div class="tarjeta">
+          <h3>Horas jugadas</h3>
+          <p>Aquí puedes visualizar cuáles juegos tienen mayor actividad reciente.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PÁGINA DE RANKING -->
+    <section id="ranking" class="pagina">
+      <h2>Ranking de juegos</h2>
+      <p class="texto-centro">
+        En esta pestaña puedes agregar una tabla o gráfico con los mejores juegos
+        según el criterio que elijas.
+      </p>
+    </section>
+
+    <!-- PÁGINA DE COMPARAR JUEGOS -->
+    <section id="comparar" class="pagina">
+      <h2>Comparar Juegos:</h2>
+
+      <div class="contenedor-comparacion">
+
+        <div class="grupo-input autocompletado-contenedor">
+          <label for="juego1">Juego 1:</label>
+          <input type="text" id="juego1" placeholder="Ej: Elden Ring" autocomplete="off">
+          <ul id="listaJuego1" class="lista-sugerencias"></ul>
+        </div>
+
+        <div class="grupo-input autocompletado-contenedor">
+          <label for="juego2">Juego 2:</label>
+          <input type="text" id="juego2" placeholder="Ej: Dead by Daylight" autocomplete="off">
+          <ul id="listaJuego2" class="lista-sugerencias"></ul>
+        </div>
+
       </div>
 
-      <div class="grupo-input autocompletado-contenedor">
-        <label for="juego2">Juego 2:</label>
-        <input type="text" id="juego2" placeholder="Ej: Dead by Daylight" autocomplete="off">
-        <ul id="listaJuego2" class="lista-sugerencias"></ul>
+      <div class="contenedor-grafico">
+        <canvas id="graficoRadar"></canvas>
       </div>
-
-      <!-- <button id="btnComparar">Comparar</button>/* -->
-    </div>
-
-    <div class="contenedor-grafico">
-      <canvas id="graficoRadar"></canvas>
-    </div>
-
-
+    </section>
 
   </main>
 

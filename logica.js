@@ -226,12 +226,24 @@ function configurarAutocompletado() {
 
 cargarDatos();
 
-const botonToggle = document.getElementById('toggleMenu');
-const sidebar = document.getElementById('miSidebar');
-const body = document.body;
+function mostrarSeccion(idSeccion, boton) {
+    const paginas = document.querySelectorAll('.pagina');
 
-botonToggle.addEventListener('click', function() {
-    sidebar.classList.toggle('cerrado');
-    body.classList.toggle('expandido');
-});
+    paginas.forEach(pagina => {
+        pagina.classList.remove('activa');
+    });
 
+    const seccion = document.getElementById(idSeccion);
+    if (seccion) {
+        seccion.classList.add('activa');
+    }
+
+    const botones = document.querySelectorAll('.nav-btn');
+    botones.forEach(btn => {
+        btn.classList.remove('activo');
+    });
+
+    if (boton && boton.classList.contains('nav-btn')) {
+        boton.classList.add('activo');
+    }
+}

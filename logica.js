@@ -2,7 +2,7 @@ let miGrafico;
 let datosJuegos = [];
 
 async function cargarDatos() {
-    try {
+
         const respuesta = await fetch('datos/datos_radar.json');
         datosJuegos = await respuesta.json();
         inicializarGrafico();
@@ -10,8 +10,7 @@ async function cargarDatos() {
         configurarAutocompletado();
         generarRanking();
                 document.getElementById('btnAzar').addEventListener('click', compararAlAzar);
-    } catch (e) {
-    }
+
 }
 
 function inicializarGrafico() {

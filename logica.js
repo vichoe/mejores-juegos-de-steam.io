@@ -9,6 +9,7 @@ async function cargarDatos() {
         // configurarBoton(); 
         configurarBuscador(); 
         configurarAutocompletado();
+        generarRanking();
         console.log("¡Datos cargados y listos para Cara a Cara!");
     } catch (e) {
         console.error("No se pudo cargar el JSON:", e);
@@ -224,7 +225,6 @@ function configurarAutocompletado() {
     crearDropdown('juego2', 'listaJuego2');
 }
 
-cargarDatos();
 
 function mostrarSeccion(idSeccion, boton) {
     const paginas = document.querySelectorAll('.pagina');
@@ -247,3 +247,45 @@ function mostrarSeccion(idSeccion, boton) {
         boton.classList.add('activo');
     }
 }
+
+// FUNCIÓN DEL RANKING
+function generarRanking() {
+    const cuerpoTabla = document.getElementById('cuerpo-ranking');
+    if (!cuerpoTabla) return;
+
+    const rankingProcesado = datosJuegos.map(juego => {
+        let ratingNum = juego.rating || 0;
+
+        const dueños = juego["Estimated owners"] || 1; 
+        
+        // FÓRMULA: Rating * log10(Dueños)
+        const puntaje = (ratingNum * Math.log10(Math.max(dueños, 1))).toFixed(2);
+
+        return {
+            name: juego.Name,
+            rating: ratingNum,
+            owners: dueños,
+            score: parseFloat(puntaje)
+        };
+    });
+
+    // Ordenamos de mayor a menor puntaje y tomamos los mejores 20
+    rankingProcesado.sort((a, b) => b.score - a.score);
+    const top20 = rankingProcesado.slice(0, 20);
+
+    // Limpiamos la tabla y generamos el HTML
+    cuerpoTabla.innerHTML = '';
+    top20.forEach((juego, indice) => {
+        const fila = document.createElement('tr');
+        fila.innerHTML = `
+            <td>${indice + 1}</td>
+            <td class="nombre-juego">${juego.name}</td>
+            <td>${juego.rating}%</td>
+            <td>${juego.owners.toLocaleString()}</td>
+            <td class="puntaje-resaltado">${juego.score}</td>
+        `;
+        cuerpoTabla.appendChild(fila);
+    });
+}
+
+cargarDatos();

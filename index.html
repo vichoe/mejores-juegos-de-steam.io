@@ -83,11 +83,34 @@
 
     <!-- PÁGINA DE RANKING -->
     <section id="ranking" class="pagina">
-      <h2>Ranking de juegos</h2>
-      <p class="texto-centro">
-        En esta pestaña puedes agregar una tabla o gráfico con los mejores juegos
-        según el criterio que elijas.
-      </p>
+      <h2>Top 20: Mejores Juegos (Ranking de Popularidad y Calidad)</h2>
+
+      <div class="descripcion-formula">
+        <p>
+          <strong>Criterio de Ranking:</strong> Calculamos el éxito mediante la fórmula 
+          <code>Rating × log₁₀(Dueños)</code>.
+        </p>
+        <p class="resumen-detalle">
+          Esto permite que los juegos con calificaciones altas mantengan su relevancia frente a los títulos masivos, 
+          utilizando una <em>escala logarítmica</em> para que la popularidad no opaque la calidad.
+        </p>
+      </div>
+      
+      <div class="contenedor-tabla">
+        <table id="tabla-ranking">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Juego</th>
+              <th>Rating</th>
+              <th>Dueños (Promedio)</th>
+              <th>Puntaje Final</th>
+            </tr>
+          </thead>
+          <tbody id="cuerpo-ranking">
+            </tbody>
+        </table>
+      </div>
     </section>
 
     <!-- PÁGINA DE COMPARAR JUEGOS -->

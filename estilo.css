@@ -335,3 +335,74 @@ h1 {
     font-size: 1.4rem;
   }
 }
+
+/*  ESTILOS PARA LA TABLA DE RANKING */
+.contenedor-tabla {
+  width: 100%;
+  max-width: 900px;
+  margin: 30px auto;
+  overflow-x: auto;
+  background-color: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  padding: 15px;
+}
+
+.descripcion-formula {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #d4c8f0;
+  line-height: 1.6;
+}
+
+.descripcion-formula code {
+  background-color: rgba(245, 197, 24, 0.2);
+  color: #f5c518;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.resumen-detalle {
+  font-size: 0.95rem;
+  opacity: 0.8;
+  max-width: 700px;
+  margin: 10px auto 0;
+}
+
+#tabla-ranking {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  color: #e8e0f5;
+}
+
+#tabla-ranking th {
+  background-color: rgba(245, 197, 24, 0.1);
+  padding: 15px;
+  border-bottom: 2px solid #f5c518;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+#tabla-ranking td {
+  padding: 12px 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Efecto al pasar el mouse sobre una fila */
+#tabla-ranking tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.nombre-juego {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.puntaje-resaltado {
+  color: #f5c518;
+  font-weight: bold;
+  font-size: 1.1rem;
+}

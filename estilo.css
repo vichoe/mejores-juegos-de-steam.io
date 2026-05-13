@@ -652,3 +652,25 @@ h1 {
   font-family: monospace;
   font-size: 0.95rem;
 }
+
+/* Estilo para el botón al azar */
+.boton-azar {
+  background: var(--accent-cyan);
+  color: #0b0e14;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 8px;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.boton-azar:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
+  background: white;
+}

@@ -6,13 +6,11 @@ async function cargarDatos() {
         const respuesta = await fetch('datos/datos_radar.json');
         datosJuegos = await respuesta.json();
         inicializarGrafico();
-        // configurarBoton(); 
         configurarBuscador(); 
         configurarAutocompletado();
         generarRanking();
-        console.log("¡Datos cargados y listos para Cara a Cara!");
+                document.getElementById('btnAzar').addEventListener('click', compararAlAzar);
     } catch (e) {
-        console.error("No se pudo cargar el JSON:", e);
     }
 }
 
@@ -284,6 +282,25 @@ function generarRanking() {
         `;
         cuerpoTabla.appendChild(fila);
     });
+}
+
+function compararAlAzar() {
+    if (datosJuegos.length < 2) return;
+
+    let indice1 = Math.floor(Math.random() * datosJuegos.length);
+    let indice2 = Math.floor(Math.random() * datosJuegos.length);
+
+    while (indice1 === indice2) {
+        indice2 = Math.floor(Math.random() * datosJuegos.length);
+    }
+
+    const juegoAzar1 = datosJuegos[indice1];
+    const juegoAzar2 = datosJuegos[indice2];
+
+    document.getElementById('juego1').value = juegoAzar1.Name;
+    document.getElementById('juego2').value = juegoAzar2.Name;
+
+    actualizarComparacion();
 }
 
 cargarDatos();

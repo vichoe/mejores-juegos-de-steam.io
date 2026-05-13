@@ -160,6 +160,9 @@ function actualizarComparacion() {
     miGrafico.data.datasets[1].label = juego2 ? juego2.Name : 'Juego 2';
 
     miGrafico.update();
+    if (juego1) {
+        reproducirSonido(juego1.Positive || 0, juego1.Negative || 0);
+    }
 }
 
 function configurarBuscador() {
@@ -300,6 +303,18 @@ function compararAlAzar() {
     document.getElementById('juego2').value = juegoAzar2.Name;
 
     actualizarComparacion();
+}
+
+function reproducirSonido(positivas, negativas) {
+    let audio;
+    if (positivas > negativas) {
+        audio = new Audio('sonidos/bueno.mp3');
+    } else {
+        audio = new Audio('sonidos/malo.mp3');
+    }
+
+    audio.volume = 0.3; 
+    audio.play();
 }
 
 cargarDatos();

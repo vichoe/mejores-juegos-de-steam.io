@@ -3,7 +3,7 @@ let datosJuegos = [];
 
 async function cargarDatos() {
     try {
-        const respuesta = await fetch('datos_radar.json');
+        const respuesta = await fetch('datos/datos_radar.json');
         datosJuegos = await respuesta.json();
         inicializarGrafico();
         // configurarBoton(); 

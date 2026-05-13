@@ -39,25 +39,139 @@
   <main class="contenido">
 
     <!-- PÁGINA DE INICIO -->
-    <section id="inicio" class="pagina activa">
-      <div class="hero">
-        <h2>Bienvenida a Mejores Juegos</h2>
-        <p>
-          Este proyecto permite analizar videojuegos usando datos como precio,
-          horas jugadas, reseñas positivas, reseñas negativas y cantidad aproximada
-          de dueños.
-        </p>
+<section id="inicio" class="pagina activa">
 
-        <p>
-          El objetivo es comparar juegos de forma visual para entender mejor cuáles
-          destacan en popularidad, actividad y valoración por los usuarios.
-        </p>
+  <div class="hero">
+    <p class="etiqueta">Visualización interactiva de videojuegos en Steam</p>
 
-        <button class="boton-principal" onclick="mostrarSeccion('comparar')">
-          Ir a comparar juegos
-        </button>
+    <h2>¿Más caro significa mejor juego?</h2>
+
+    <p class="bajada">
+      Esta visualización explora si existe una relación entre el precio de un
+      videojuego y la valoración que recibe por parte de los usuarios en Steam.
+    </p>
+
+    <div class="mensaje-clave">
+      <h3>Mensaje clave</h3>
+      <p>
+        En Steam, un precio más alto no garantiza una mejor valoración: algunos juegos
+        baratos o gratuitos logran ratings muy altos, mientras que ciertos títulos más
+        caros reciben evaluaciones más bajas por parte de la comunidad.
+      </p>
+    </div>
+
+    <button class="boton-principal" onclick="mostrarSeccion('graficos')">
+      Explorar visualización
+    </button>
+  </div>
+
+
+  <div class="bloques-inicio">
+
+    <article class="bloque-info">
+      <h3>Pregunta inicial</h3>
+      <p>
+        ¿Los videojuegos con mayor precio son realmente mejor evaluados por la comunidad?
+      </p>
+      <p>
+        Esta pregunta permite analizar si pagar más se relaciona con una mejor experiencia
+        percibida por los usuarios.
+      </p>
+    </article>
+
+    <article class="bloque-info">
+      <h3>Dataset utilizado</h3>
+      <p>
+        El dataset contiene información de videojuegos de Steam, considerando variables
+        como precio, reseñas positivas, reseñas negativas, rating, dueños estimados y
+        tiempo promedio jugado en las últimas dos semanas.
+      </p>
+      <p>
+        Estas variables permiten comparar la valoración de los usuarios con indicadores
+        de popularidad y actividad reciente.
+      </p>
+    </article>
+
+    <article class="bloque-info">
+      <h3>Cómo explorar</h3>
+      <p>
+        La visualización permite revisar patrones generales, filtrar juegos y observar
+        casos donde el precio no coincide con la valoración recibida.
+      </p>
+      <p>
+        Además, la sonificación complementa la lectura visual al representar la valoración
+        de los juegos mediante sonidos.
+      </p>
+    </article>
+
+  </div>
+
+
+  <section class="seccion-metodologia">
+    <h3>Metodología</h3>
+
+    <div class="metodologia-grid">
+
+      <div class="metodologia-card">
+        <h4>1. Variables seleccionadas</h4>
+        <p>
+          Se utilizaron variables relacionadas con precio, valoración y popularidad:
+          precio del juego, reseñas positivas, reseñas negativas, rating, dueños estimados
+          y tiempo promedio jugado en las últimas dos semanas.
+        </p>
       </div>
-    </section>
+
+      <div class="metodologia-card">
+        <h4>2. Cálculo del rating</h4>
+        <p>
+          El rating representa el porcentaje de reseñas positivas respecto del total
+          de reseñas registradas para cada juego.
+        </p>
+
+        <div class="formula-rating">
+          rating = positivas / (positivas + negativas) × 100
+        </div>
+      </div>
+
+      <div class="metodologia-card">
+        <h4>3. Interpretación del precio</h4>
+        <p>
+          El precio se analiza como una variable comparativa para observar si los juegos
+          más caros tienden, o no, a tener mejores valoraciones por parte de los usuarios.
+        </p>
+      </div>
+
+      <div class="metodologia-card">
+        <h4>4. Consideración de popularidad</h4>
+        <p>
+          Para evitar conclusiones engañosas, la valoración se interpreta junto con la
+          cantidad de reseñas y los dueños estimados. Un juego con pocas reseñas puede
+          tener un rating alto, pero no necesariamente representar una tendencia robusta.
+        </p>
+      </div>
+
+      <div class="metodologia-card">
+        <h4>5. Normalización</h4>
+        <p>
+          Algunas variables poseen escalas muy distintas entre sí, como precio, dueños
+          estimados y cantidad de reseñas. Por eso, cuando se comparan juegos específicos,
+          los valores pueden normalizarse para facilitar la lectura visual.
+        </p>
+      </div>
+
+      <div class="metodologia-card">
+        <h4>6. Limitaciones</h4>
+        <p>
+          Los dueños son estimados y el rating depende de la cantidad de reseñas disponibles.
+          Por esto, los resultados deben interpretarse como una aproximación al comportamiento
+          de la comunidad, no como una medida absoluta de calidad.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+</section>
 
     <!-- PÁGINA DE GRÁFICOS -->
     <section id="graficos" class="pagina">

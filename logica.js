@@ -122,7 +122,7 @@ function actualizarComparacion() {
         juego1["Average playtime two weeks"] || 0, 
         juego1.Positive || 0,
         juego1.Negative || 0,
-        juego1.Owners_Numeric || 0
+        juego1["Estimated owners"] || 0 
     ] : [0, 0, 0, 0, 0];
 
     const v2 = juego2 ? [
@@ -130,14 +130,12 @@ function actualizarComparacion() {
         juego2["Average playtime two weeks"] || 0, 
         juego2.Positive || 0,
         juego2.Negative || 0,
-        juego2.Owners_Numeric || 0
+        juego2["Estimated owners"] || 0 
     ] : [0, 0, 0, 0, 0];
 
     const maxPrice = Math.max(v1[0], v2[0], 1); 
     const maxPlaytime = Math.max(v1[1], v2[1], 1);
-    
     const maxReviews = Math.max(v1[2], v1[3], v2[2], v2[3], 1); 
-    
     const maxOwners = Math.max(v1[4], v2[4], 1);
 
     const dibujo1 = [

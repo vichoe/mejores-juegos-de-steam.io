@@ -19,7 +19,7 @@ function inicializarGrafico() {
     miGrafico = new Chart(ctx, {
         type: 'radar',
         data: {
-            labels: ['Precio', 'Minutos Jugados (últimas 2 semanas)', 'Reseñas Positivas', 'Reseñas Negativas', 'Dueños Aproximados'],
+            labels: ['Precio', 'Tiempo de juego promedio', 'Reseñas Positivas', 'Reseñas Negativas', 'Dueños Aproximados'],
             datasets: [
                 {
                     label: 'Juego 1',
@@ -117,7 +117,7 @@ function actualizarComparacion() {
 
     const v1 = juego1 ? [
         juego1.Price || 0,
-        juego1["Average playtime two weeks"] || 0, 
+        juego1["Average playtime forever"] || 0, 
         juego1.Positive || 0,
         juego1.Negative || 0,
         juego1["Estimated owners"] || 0 
@@ -125,7 +125,7 @@ function actualizarComparacion() {
 
     const v2 = juego2 ? [
         juego2.Price || 0,
-        juego2["Average playtime two weeks"] || 0, 
+        juego2["Average playtime forever"] || 0, 
         juego2.Positive || 0,
         juego2.Negative || 0,
         juego2["Estimated owners"] || 0 
@@ -338,7 +338,7 @@ function generarGraficosExtras() {
     });
 
     // GRÁFICO 3: Horas Jugadas 
-    const topHoras = [...datosJuegos].sort((a, b) => (b["Average playtime two weeks"] || 0) - (a["Average playtime two weeks"] || 0)).slice(0, 10);
+    const topHoras = [...datosJuegos].sort((a, b) => (b["Average playtime forever"] || 0) - (a["Average playtime forever"] || 0)).slice(0, 10);
     
     new Chart(document.getElementById('graficoHoras').getContext('2d'), {
         type: 'bar',
@@ -346,7 +346,7 @@ function generarGraficosExtras() {
             labels: topHoras.map(j => j.Name),
             datasets: [{
                 label: 'Horas Promedio',
-                data: topHoras.map(j => j["Average playtime two weeks"]),
+                data: topHoras.map(j => j["Average playtime forever"]),
                 backgroundColor: 'rgba(155, 89, 182, 0.6)', 
                 borderColor: '#9b59b6',
                 borderWidth: 1,
@@ -362,10 +362,9 @@ let graficosInstancias = {};
 let topDatos = {};
 
 function generarGraficosExtras() {
-    // 1. Guardamos los datos ordenados en memoria
     topDatos.resenas = [...datosJuegos].sort((a, b) => (b.Positive || 0) - (a.Positive || 0));
     topDatos.duenos = [...datosJuegos].sort((a, b) => (b["Estimated owners"] || 0) - (a["Estimated owners"] || 0));
-    topDatos.horas = [...datosJuegos].sort((a, b) => (b["Average playtime two weeks"] || 0) - (a["Average playtime two weeks"] || 0));
+    topDatos.horas = [...datosJuegos].sort((a, b) => (b["Average playtime forever"] || 0) - (a["Average playtime forever"] || 0));
 
     // Configuración base de Chart.js
     const opcionesComunes = {
@@ -409,7 +408,7 @@ function generarGraficosExtras() {
             graficosInstancias[id].data.labels = datosSlice.map(j => j.Name);
             graficosInstancias[id].data.datasets[0].data = datosSlice.map(j => 
                 tipo === 'resenas' ? j.Positive : 
-                (tipo === 'duenos' ? j["Estimated owners"] : j["Average playtime two weeks"])
+                (tipo === 'duenos' ? j["Estimated owners"] : j["Average playtime forever"])
             );
             graficosInstancias[id].update();
         } else {
@@ -422,7 +421,7 @@ function generarGraficosExtras() {
                         label: label,
                         data: datosSlice.map(j => 
                             tipo === 'resenas' ? j.Positive : 
-                            (tipo === 'duenos' ? j["Estimated owners"] : j["Average playtime two weeks"])
+                            (tipo === 'duenos' ? j["Estimated owners"] : j["Average playtime forever"])
                         ),
                         backgroundColor: colorBase,
                         borderColor: borde,

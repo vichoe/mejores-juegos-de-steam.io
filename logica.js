@@ -160,9 +160,6 @@ function actualizarComparacion() {
     miGrafico.data.datasets[1].label = juego2 ? juego2.Name : 'Juego 2';
 
     miGrafico.update();
-    if (juego1) {
-        reproducirSonido(juego1.Positive || 0, juego1.Negative || 0);
-    }
 }
 
 function configurarBuscador() {
@@ -197,11 +194,12 @@ function crearDropdown(idInput, idLista) {
             sugerencias.forEach(juego => {
                 const itemLi = document.createElement('li');
                 itemLi.textContent = juego.Name;
-                
+    
                 itemLi.addEventListener('click', () => {
                     input.value = juego.Name; 
                     lista.style.display = 'none'; 
-                    actualizarComparacion(); 
+                    actualizarComparacion();          
+                    reproducirSonido(juego.Positive || 0, juego.Negative || 0);
                 });
 
                 lista.appendChild(itemLi);
@@ -286,8 +284,13 @@ function generarRanking() {
     });
 }
 
+
 function compararAlAzar() {
     if (datosJuegos.length < 2) return;
+
+    let audioDado = new Audio('sonidos/dado.mp3');
+    audioDado.volume = 0.5;
+    audioDado.play();
 
     let indice1 = Math.floor(Math.random() * datosJuegos.length);
     let indice2 = Math.floor(Math.random() * datosJuegos.length);
@@ -302,7 +305,10 @@ function compararAlAzar() {
     document.getElementById('juego1').value = juegoAzar1.Name;
     document.getElementById('juego2').value = juegoAzar2.Name;
 
-    actualizarComparacion();
+    setTimeout(() => {
+        actualizarComparacion();
+        reproducirSonido(juegoAzar1.Positive || 0, juegoAzar1.Negative || 0);
+    }, 800); 
 }
 
 function reproducirSonido(positivas, negativas) {

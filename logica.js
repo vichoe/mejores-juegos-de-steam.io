@@ -447,17 +447,16 @@ function generarGraficosExtras() {
 
     // GRÁFICO 4: SCATTER COMPARATIVO (GRANDE) 
     
-    // filtramos solo juegos que tengan "hartos jugadores" 
-    const juegosMasivos = datosJuegos.filter(j => (j["Estimated owners"] || 0) >= 500000);
+    const juegosMasivos = datosJuegos.filter(j => (j["Estimated owners"] || 0) >= 2000000);
 
-    // Grupo A: Baratos (<= 15 dólares) y Bien valorados (>= 80%)
+    // Grupo A: Baratos (<= 20 dólares) y EXCELENTEMENTE valorados (>= 90%)
     const joyasBaratas = juegosMasivos
-        .filter(j => j.Price <= 15 && j.rating >= 80)
+        .filter(j => j.Price <= 20 && j.rating >= 90)
         .map(j => ({ x: j.Price, y: j.rating, name: j.Name, owners: j["Estimated owners"] }));
 
-    // Grupo B: Mal valorados (< 60%), sin importar el precio
+    // Grupo B: Mal valorados (< 60%) y limitados a menos de 40 USD 
     const decepciones = juegosMasivos
-        .filter(j => j.rating < 60)
+        .filter(j => j.Price <= 40 && j.rating < 60)
         .map(j => ({ x: j.Price, y: j.rating, name: j.Name, owners: j["Estimated owners"] }));
 
     new Chart(document.getElementById('graficoComparacion').getContext('2d'), {
@@ -467,18 +466,18 @@ function generarGraficosExtras() {
                 {
                     label: 'Joyas Baratas y Buenas',
                     data: joyasBaratas,
-                    backgroundColor: 'rgba(0, 210, 200, 0.7)', 
-                    borderColor: '#00d2c8',
-                    pointRadius: 6, 
-                    pointHoverRadius: 9
+                    backgroundColor: 'rgba(0, 210, 200, 0.3)', 
+                    borderColor: 'rgba(0, 210, 200, 0.8)',
+                    pointRadius: 4, 
+                    pointHoverRadius: 7
                 },
                 {
                     label: 'Decepciones Populares',
                     data: decepciones,
-                    backgroundColor: 'rgba(255, 99, 132, 0.7)', 
+                    backgroundColor: 'rgba(255, 99, 132, 0.6)', 
                     borderColor: '#ff6384',
-                    pointRadius: 6,
-                    pointHoverRadius: 9
+                    pointRadius: 5, 
+                    pointHoverRadius: 8
                 }
             ]
         },

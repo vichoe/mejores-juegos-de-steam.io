@@ -223,15 +223,6 @@ h1 {
   font-weight: bold;
 }
 
-.pagina {
-  display: none;
-  animation: aparecer 0.3s ease;
-}
-
-.pagina.activa {
-  display: block;
-}
-
 @keyframes aparecer {
   from {
     opacity: 0;
@@ -691,4 +682,23 @@ h1 {
   width: 100%;
   position: relative;
   margin-top: 20px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.seccion-pagina {
+  display: block;
+  padding-top: 80px;
+  margin-bottom: 70px;
+}
+
+.boton-link {
+  display: inline-block;
+  text-decoration: none;
+}
+
+.navbar a {
+  text-decoration: none;
 }

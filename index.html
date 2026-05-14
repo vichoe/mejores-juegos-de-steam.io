@@ -15,6 +15,7 @@
 </head>
 
 <body>
+
   <header class="encabezado">
     <div class="marca">
       <img src="INFOVIS.png" alt="Icono" class="icono">
@@ -22,162 +23,163 @@
     </div>
 
     <nav class="navbar">
-      <button class="nav-btn activo" onclick="mostrarSeccion('inicio', this)">Inicio</button>
-
-      <div class="dropdown">
-        <button class="nav-btn">Gráficos ▾</button>
-        <div class="dropdown-menu">
-          <button onclick="mostrarSeccion('graficos', this)">Ver gráficos</button>
-          <button onclick="mostrarSeccion('ranking', this)">Ranking</button>
-        </div>
-      </div>
-
-      <button class="nav-btn" onclick="mostrarSeccion('comparar', this)">Comparar juegos</button>
+      <a class="nav-btn activo" href="#inicio">Inicio</a>
+      <a class="nav-btn" href="#metodologia">Metodología</a>
+      <a class="nav-btn" href="#graficos">Gráficos</a>
+      <a class="nav-btn" href="#ranking">Ranking</a>
+      <a class="nav-btn" href="#comparar">Comparar juegos</a>
     </nav>
   </header>
 
+
   <main class="contenido">
 
-    <!-- PÁGINA DE INICIO -->
-<section id="inicio" class="pagina activa">
+    <!-- INICIO -->
+    <section id="inicio" class="seccion-pagina">
 
-  <div class="hero">
-    <p class="etiqueta">Visualización interactiva de videojuegos en Steam</p>
+      <div class="hero">
+        <p class="etiqueta">Visualización interactiva de videojuegos en Steam</p>
 
-    <h2>¿Más caro significa mejor juego?</h2>
+        <h2>¿Más caro significa mejor juego?</h2>
 
-    <p class="bajada">
-      Esta visualización explora si existe una relación entre el precio de un
-      videojuego y la valoración que recibe por parte de los usuarios en Steam.
-    </p>
-
-    <div class="mensaje-clave">
-      <h3>Mensaje clave</h3>
-      <p>
-        En Steam, un precio más alto no garantiza una mejor valoración: algunos juegos
-        baratos o gratuitos logran ratings muy altos, mientras que ciertos títulos más
-        caros reciben evaluaciones más bajas por parte de la comunidad.
-      </p>
-    </div>
-
-    <button class="boton-principal" onclick="mostrarSeccion('graficos')">
-      Explorar visualización
-    </button>
-  </div>
-
-
-  <div class="bloques-inicio">
-
-    <article class="bloque-info">
-      <h3>Pregunta inicial</h3>
-      <p>
-        ¿Los videojuegos con mayor precio son realmente mejor evaluados por la comunidad?
-      </p>
-      <p>
-        Esta pregunta permite analizar si pagar más se relaciona con una mejor experiencia
-        percibida por los usuarios.
-      </p>
-    </article>
-
-    <article class="bloque-info">
-      <h3>Dataset utilizado</h3>
-      <p>
-        El dataset contiene información de videojuegos de Steam, considerando variables
-        como precio, reseñas positivas, reseñas negativas, rating, dueños estimados y
-        tiempo promedio jugado en las últimas dos semanas.
-      </p>
-      <p>
-        Estas variables permiten comparar la valoración de los usuarios con indicadores
-        de popularidad y actividad reciente.
-      </p>
-    </article>
-
-    <article class="bloque-info">
-      <h3>Cómo explorar</h3>
-      <p>
-        La visualización permite revisar patrones generales, filtrar juegos y observar
-        casos donde el precio no coincide con la valoración recibida.
-      </p>
-      <p>
-        Además, la sonificación complementa la lectura visual al representar la valoración
-        de los juegos mediante sonidos.
-      </p>
-    </article>
-
-  </div>
-
-
-  <section class="seccion-metodologia">
-    <h3>Metodología</h3>
-
-    <div class="metodologia-grid">
-
-      <div class="metodologia-card">
-        <h4>1. Variables seleccionadas</h4>
-        <p>
-          Se utilizaron variables relacionadas con precio, valoración y popularidad:
-          precio del juego, reseñas positivas, reseñas negativas, rating, dueños estimados
-          y tiempo promedio jugado en las últimas dos semanas.
-        </p>
-      </div>
-
-      <div class="metodologia-card">
-        <h4>2. Cálculo del rating</h4>
-        <p>
-          El rating representa el porcentaje de reseñas positivas respecto del total
-          de reseñas registradas para cada juego.
+        <p class="bajada">
+          Esta visualización explora si existe una relación entre el precio de un
+          videojuego y la valoración que recibe por parte de los usuarios en Steam.
         </p>
 
-        <div class="formula-rating">
-          rating = positivas / (positivas + negativas) × 100
+        <div class="mensaje-clave">
+          <h3>Mensaje clave</h3>
+          <p>
+            En Steam, un precio más alto no garantiza una mejor valoración: algunos juegos
+            baratos o gratuitos logran ratings muy altos, mientras que ciertos títulos más
+            caros reciben evaluaciones más bajas por parte de la comunidad.
+          </p>
         </div>
+
+        <a class="boton-principal boton-link" href="#graficos">
+          Explorar visualización
+        </a>
       </div>
 
-      <div class="metodologia-card">
-        <h4>3. Interpretación del precio</h4>
-        <p>
-          El precio se analiza como una variable comparativa para observar si los juegos
-          más caros tienden, o no, a tener mejores valoraciones por parte de los usuarios.
-        </p>
+
+      <div class="bloques-inicio">
+
+        <article class="bloque-info">
+          <h3>Pregunta inicial</h3>
+          <p>
+            ¿Los videojuegos con mayor precio son realmente mejor evaluados por la comunidad?
+          </p>
+          <p>
+            Esta pregunta permite analizar si pagar más se relaciona con una mejor experiencia
+            percibida por los usuarios.
+          </p>
+        </article>
+
+        <article class="bloque-info">
+          <h3>Dataset utilizado</h3>
+          <p>
+            El dataset contiene información de videojuegos de Steam, considerando variables
+            como precio, reseñas positivas, reseñas negativas, rating, dueños estimados y
+            tiempo promedio jugado en las últimas dos semanas.
+          </p>
+          <p>
+            Estas variables permiten comparar la valoración de los usuarios con indicadores
+            de popularidad y actividad reciente.
+          </p>
+        </article>
+
+        <article class="bloque-info">
+          <h3>Cómo explorar</h3>
+          <p>
+            La visualización permite revisar patrones generales, observar rankings y comparar
+            juegos específicos según precio, rating, popularidad y actividad reciente.
+          </p>
+          <p>
+            Además, la sonificación complementa la lectura visual al representar la valoración
+            de los juegos mediante sonidos.
+          </p>
+        </article>
+
       </div>
 
-      <div class="metodologia-card">
-        <h4>4. Consideración de popularidad</h4>
-        <p>
-          Para evitar conclusiones engañosas, la valoración se interpreta junto con la
-          cantidad de reseñas y los dueños estimados. Un juego con pocas reseñas puede
-          tener un rating alto, pero no necesariamente representar una tendencia robusta.
-        </p>
+    </section>
+
+
+    <!-- METODOLOGÍA -->
+    <section id="metodologia" class="seccion-metodologia">
+
+      <h3>Metodología</h3>
+
+      <div class="metodologia-grid">
+
+        <div class="metodologia-card">
+          <h4>1. Variables seleccionadas</h4>
+          <p>
+            Se utilizaron variables relacionadas con precio, valoración y popularidad:
+            precio del juego, reseñas positivas, reseñas negativas, rating, dueños estimados
+            y tiempo promedio jugado en las últimas dos semanas.
+          </p>
+        </div>
+
+        <div class="metodologia-card">
+          <h4>2. Cálculo del rating</h4>
+          <p>
+            El rating representa el porcentaje de reseñas positivas respecto del total
+            de reseñas registradas para cada juego.
+          </p>
+
+          <div class="formula-rating">
+            rating = positivas / (positivas + negativas) × 100
+          </div>
+        </div>
+
+        <div class="metodologia-card">
+          <h4>3. Interpretación del precio</h4>
+          <p>
+            El precio se analiza como una variable comparativa para observar si los juegos
+            más caros tienden, o no, a tener mejores valoraciones por parte de los usuarios.
+          </p>
+        </div>
+
+        <div class="metodologia-card">
+          <h4>4. Consideración de popularidad</h4>
+          <p>
+            Para evitar conclusiones engañosas, la valoración se interpreta junto con la
+            cantidad de reseñas y los dueños estimados. Un juego con pocas reseñas puede
+            tener un rating alto, pero no necesariamente representar una tendencia robusta.
+          </p>
+        </div>
+
+        <div class="metodologia-card">
+          <h4>5. Normalización</h4>
+          <p>
+            Algunas variables poseen escalas muy distintas entre sí, como precio, dueños
+            estimados y cantidad de reseñas. Por eso, cuando se comparan juegos específicos,
+            los valores pueden normalizarse para facilitar la lectura visual.
+          </p>
+        </div>
+
+        <div class="metodologia-card">
+          <h4>6. Limitaciones</h4>
+          <p>
+            Los dueños son estimados y el rating depende de la cantidad de reseñas disponibles.
+            Por esto, los resultados deben interpretarse como una aproximación al comportamiento
+            de la comunidad, no como una medida absoluta de calidad.
+          </p>
+        </div>
+
       </div>
 
-      <div class="metodologia-card">
-        <h4>5. Normalización</h4>
-        <p>
-          Algunas variables poseen escalas muy distintas entre sí, como precio, dueños
-          estimados y cantidad de reseñas. Por eso, cuando se comparan juegos específicos,
-          los valores pueden normalizarse para facilitar la lectura visual.
-        </p>
-      </div>
+    </section>
 
-      <div class="metodologia-card">
-        <h4>6. Limitaciones</h4>
-        <p>
-          Los dueños son estimados y el rating depende de la cantidad de reseñas disponibles.
-          Por esto, los resultados deben interpretarse como una aproximación al comportamiento
-          de la comunidad, no como una medida absoluta de calidad.
-        </p>
-      </div>
 
-    </div>
-  </section>
+    <!-- GRÁFICOS -->
+    <section id="graficos" class="seccion-pagina">
 
-</section>
-
-    <!-- PÁGINA DE GRÁFICOS -->
-    <section id="graficos" class="pagina">
       <h2>Gráficos del proyecto</h2>
 
       <div class="tarjetas-graficos">
+
         <div class="tarjeta">
           <h3>Top juegos por reseñas positivas</h3>
           <canvas id="graficoResenas"></canvas>
@@ -189,38 +191,49 @@
         </div>
 
         <div class="tarjeta">
-          <h3>Horas jugadas (Últimas 2 semanas)</h3>
+          <h3>Horas jugadas en las últimas 2 semanas</h3>
           <canvas id="graficoHoras"></canvas>
-        </div> </div> <div class="tarjeta tarjeta-grande">
-        <h3>Joyas vs Decepciones (Juegos Populares)</h3>
-        <p>
-          Comparación de juegos con <strong>más de 500,000 dueños</strong>. 
-          En <span style="color: #00d2c8; font-weight: bold;">celeste</span>: Juegos baratos (≤ $15) y muy bien valorados (≥ 80%). 
-          En <span style="color: #ff6384; font-weight: bold;">rojo</span>: Juegos mal valorados (< 60%).
-        </p>
-        <div class="contenedor-canvas-grande">
-          <canvas id="graficoComparacion"></canvas>
         </div>
+
+        <div class="tarjeta tarjeta-grande">
+          <h3>Joyas vs decepciones populares</h3>
+
+          <p>
+            Comparación de juegos con <strong>más de 500.000 dueños</strong>.
+            En <span style="color: #00d2c8; font-weight: bold;">celeste</span>:
+            juegos baratos, de precio menor o igual a $15, y muy bien valorados, con rating mayor o igual a 80%.
+            En <span style="color: #ff6384; font-weight: bold;">rojo</span>:
+            juegos populares mal valorados, con rating menor a 60%.
+          </p>
+
+          <div class="contenedor-canvas-grande">
+            <canvas id="graficoComparacion"></canvas>
+          </div>
+        </div>
+
       </div>
 
     </section>
 
 
-    <!-- PÁGINA DE RANKING -->
-    <section id="ranking" class="pagina">
-      <h2>Top 20: Mejores Juegos (Ranking de Popularidad y Calidad)</h2>
+    <!-- RANKING -->
+    <section id="ranking" class="seccion-pagina">
+
+      <h2>Top 20: Ranking de popularidad y valoración</h2>
 
       <div class="descripcion-formula">
         <p>
-          <strong>Criterio de Ranking:</strong> Calculamos el éxito mediante la fórmula 
+          <strong>Criterio de ranking:</strong> se calcula el éxito mediante la fórmula
           <code>Rating × log₁₀(Dueños)</code>.
         </p>
+
         <p class="resumen-detalle">
-          Esto permite que los juegos con calificaciones altas mantengan su relevancia frente a los títulos masivos, 
-          utilizando una <em>escala logarítmica</em> para que la popularidad no opaque la calidad.
+          Esto permite que los juegos con calificaciones altas mantengan su relevancia frente
+          a los títulos masivos, usando una escala logarítmica para que la popularidad no opaque
+          completamente la valoración.
         </p>
       </div>
-      
+
       <div class="contenedor-tabla">
         <table id="tabla-ranking">
           <thead>
@@ -228,19 +241,28 @@
               <th>#</th>
               <th>Juego</th>
               <th>Rating</th>
-              <th>Dueños (Promedio)</th>
-              <th>Puntaje Final</th>
+              <th>Dueños estimados</th>
+              <th>Puntaje final</th>
             </tr>
           </thead>
+
           <tbody id="cuerpo-ranking">
-            </tbody>
+          </tbody>
         </table>
       </div>
+
     </section>
 
-    <!-- PÁGINA DE COMPARAR JUEGOS -->
-  <section id="comparar" class="pagina">
-      <h2>Comparar Juegos:</h2>
+
+    <!-- COMPARAR JUEGOS -->
+    <section id="comparar" class="seccion-pagina">
+
+      <h2>Comparar juegos</h2>
+
+      <p class="texto-centro">
+        Selecciona dos juegos para comparar sus características principales.
+        El sonido indica si el juego tiene más reseñas positivas que negativas.
+      </p>
 
       <div class="contenedor-comparacion">
 
@@ -259,16 +281,19 @@
       </div>
 
       <div style="text-align: center; margin-bottom: 30px;">
-        <button id="btnAzar" class="boton-azar">🎲 Comparar al Azar</button>
+        <button id="btnAzar" class="boton-azar">🎲 Comparar al azar</button>
       </div>
 
       <div class="contenedor-grafico">
         <canvas id="graficoRadar"></canvas>
       </div>
+
     </section>
 
   </main>
 
+
   <script src="logica.js"></script>
+
 </body>
 </html>

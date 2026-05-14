@@ -674,3 +674,21 @@ h1 {
   box-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
   background: white;
 }
+
+
+/*ESTILOS PARA EL GRÁFICO GRANDE*/
+.tarjeta-grande {
+  width: 100% !important;       
+  max-width: 100% !important;    
+  margin-top: 40px;              
+  grid-column: 1 / -1;           
+  flex-basis: 100%;            
+  box-sizing: border-box;
+}
+
+.contenedor-canvas-grande {
+  height: 500px; 
+  width: 100%;
+  position: relative;
+  margin-top: 20px;
+}

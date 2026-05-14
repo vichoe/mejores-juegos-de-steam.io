@@ -9,6 +9,7 @@ async function cargarDatos() {
         configurarBuscador(); 
         configurarAutocompletado();
         generarRanking();
+        generarGraficosExtras();
                 document.getElementById('btnAzar').addEventListener('click', compararAlAzar);
 
 }
@@ -286,6 +287,236 @@ function generarRanking() {
     });
 }
 
+// FUNCIÓN PARA GENERAR LOS GRÁFICOS DE LA PESTAÑA "GRÁFICOS"
+function generarGraficosExtras() {
+    const opcionesComunes = {
+        indexAxis: 'y', // Hace que las barras sean horizontales
+        responsive: true,
+        plugins: {
+            legend: { display: false } 
+        },
+        scales: {
+            x: { ticks: { color: 'rgba(255,255,255,0.7)' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+            y: { ticks: { color: 'rgba(255,255,255,0.9)' }, grid: { display: false } }
+        }
+    };
+
+    // GRÁFICO 1: Reseñas Positivas 
+    const topResenas = [...datosJuegos].sort((a, b) => (b.Positive || 0) - (a.Positive || 0)).slice(0, 10);
+    
+    new Chart(document.getElementById('graficoResenas').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: topResenas.map(j => j.Name),
+            datasets: [{
+                label: 'Reseñas Positivas',
+                data: topResenas.map(j => j.Positive),
+                backgroundColor: 'rgba(0, 210, 200, 0.6)', 
+                borderColor: '#00d2c8',
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: opcionesComunes
+    });
+
+    // GRÁFICO 2: Juegos con más dueños 
+    const topDuenos = [...datosJuegos].sort((a, b) => (b["Estimated owners"] || 0) - (a["Estimated owners"] || 0)).slice(0, 10);
+    
+    new Chart(document.getElementById('graficoDuenos').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: topDuenos.map(j => j.Name),
+            datasets: [{
+                label: 'Dueños Estimados',
+                data: topDuenos.map(j => j["Estimated owners"]),
+                backgroundColor: 'rgba(245, 197, 24, 0.6)', 
+                borderColor: '#f5c518',
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: opcionesComunes
+    });
+
+    // GRÁFICO 3: Horas Jugadas 
+    const topHoras = [...datosJuegos].sort((a, b) => (b["Average playtime two weeks"] || 0) - (a["Average playtime two weeks"] || 0)).slice(0, 10);
+    
+    new Chart(document.getElementById('graficoHoras').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: topHoras.map(j => j.Name),
+            datasets: [{
+                label: 'Horas Promedio',
+                data: topHoras.map(j => j["Average playtime two weeks"]),
+                backgroundColor: 'rgba(155, 89, 182, 0.6)', 
+                borderColor: '#9b59b6',
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: opcionesComunes
+    });
+}
+
+// Variables globales para guardar los gráficos y poder actualizarlos al hacer clic
+let graficosInstancias = {};
+let topDatos = {};
+
+function generarGraficosExtras() {
+    // 1. Guardamos los datos ordenados en memoria
+    topDatos.resenas = [...datosJuegos].sort((a, b) => (b.Positive || 0) - (a.Positive || 0));
+    topDatos.duenos = [...datosJuegos].sort((a, b) => (b["Estimated owners"] || 0) - (a["Estimated owners"] || 0));
+    topDatos.horas = [...datosJuegos].sort((a, b) => (b["Average playtime two weeks"] || 0) - (a["Average playtime two weeks"] || 0));
+
+    // Configuración base de Chart.js
+    const opcionesComunes = {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false, 
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    footer: () => 'Clicp ara ver 20 juegos'
+                }
+            }
+        },
+        scales: {
+            x: { ticks: { color: 'rgba(255,255,255,0.7)' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+            y: {
+                ticks: {
+                    color: 'rgba(255,255,255,0.9)',
+                    autoSkip: false 
+                },
+                grid: { display: false }
+            }
+        }
+    };
+
+    // Función maestra para crear o actualizar un gráfico interactivo
+    function dibujarGraficoFiltro(id, tipo, colorBase, borde, label) {
+        const canvas = document.getElementById(id);
+        const tarjeta = canvas.parentElement; 
+        
+        const cantidad = canvas.dataset.cantidad ? parseInt(canvas.dataset.cantidad) : 10;
+        const datosSlice = topDatos[tipo].slice(0, cantidad);
+
+        // Ajustamos la altura visual de la tarjeta
+        tarjeta.style.height = cantidad === 10 ? '350px' : '650px';
+        tarjeta.style.transition = 'height 0.4s ease'; 
+        canvas.style.cursor = 'pointer'; 
+
+        if (graficosInstancias[id]) {
+            graficosInstancias[id].data.labels = datosSlice.map(j => j.Name);
+            graficosInstancias[id].data.datasets[0].data = datosSlice.map(j => 
+                tipo === 'resenas' ? j.Positive : 
+                (tipo === 'duenos' ? j["Estimated owners"] : j["Average playtime two weeks"])
+            );
+            graficosInstancias[id].update();
+        } else {
+            canvas.dataset.cantidad = 10;
+            graficosInstancias[id] = new Chart(canvas.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: datosSlice.map(j => j.Name),
+                    datasets: [{
+                        label: label,
+                        data: datosSlice.map(j => 
+                            tipo === 'resenas' ? j.Positive : 
+                            (tipo === 'duenos' ? j["Estimated owners"] : j["Average playtime two weeks"])
+                        ),
+                        backgroundColor: colorBase,
+                        borderColor: borde,
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: opcionesComunes
+            });
+
+            canvas.addEventListener('click', () => {
+                const cantActual = parseInt(canvas.dataset.cantidad);
+                canvas.dataset.cantidad = cantActual === 10 ? 20 : 10;
+                dibujarGraficoFiltro(id, tipo, colorBase, borde, label); 
+            });
+        }
+    }
+
+    // 3. Inicializamos los 3 gráficos
+    dibujarGraficoFiltro('graficoResenas', 'resenas', 'rgba(0, 210, 200, 0.6)', '#00d2c8', 'Reseñas Positivas');
+    dibujarGraficoFiltro('graficoDuenos', 'duenos', 'rgba(245, 197, 24, 0.6)', '#f5c518', 'Dueños Estimados');
+    dibujarGraficoFiltro('graficoHoras', 'horas', 'rgba(155, 89, 182, 0.6)', '#9b59b6', 'Horas Promedio');
+
+    // GRÁFICO 4: SCATTER COMPARATIVO (GRANDE) 
+    
+    // filtramos solo juegos que tengan "hartos jugadores" 
+    const juegosMasivos = datosJuegos.filter(j => (j["Estimated owners"] || 0) >= 500000);
+
+    // Grupo A: Baratos (<= 15 dólares) y Bien valorados (>= 80%)
+    const joyasBaratas = juegosMasivos
+        .filter(j => j.Price <= 15 && j.rating >= 80)
+        .map(j => ({ x: j.Price, y: j.rating, name: j.Name, owners: j["Estimated owners"] }));
+
+    // Grupo B: Mal valorados (< 60%), sin importar el precio
+    const decepciones = juegosMasivos
+        .filter(j => j.rating < 60)
+        .map(j => ({ x: j.Price, y: j.rating, name: j.Name, owners: j["Estimated owners"] }));
+
+    new Chart(document.getElementById('graficoComparacion').getContext('2d'), {
+        type: 'scatter',
+        data: {
+            datasets: [
+                {
+                    label: 'Joyas Baratas y Buenas',
+                    data: joyasBaratas,
+                    backgroundColor: 'rgba(0, 210, 200, 0.7)', 
+                    borderColor: '#00d2c8',
+                    pointRadius: 6, 
+                    pointHoverRadius: 9
+                },
+                {
+                    label: 'Decepciones Populares',
+                    data: decepciones,
+                    backgroundColor: 'rgba(255, 99, 132, 0.7)', 
+                    borderColor: '#ff6384',
+                    pointRadius: 6,
+                    pointHoverRadius: 9
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false, 
+            plugins: {
+                legend: {
+                    labels: { color: '#e8e0f5', font: { size: 14 } }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const p = context.raw;
+                            return `${p.name} | $${p.x} | Rating: ${p.y}% | Dueños: ${(p.owners / 1000000).toFixed(1)}M`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    title: { display: true, text: 'Precio (USD)', color: '#f5c518', font: { size: 14 } },
+                    ticks: { color: 'rgba(255,255,255,0.7)' },
+                    grid: { color: 'rgba(255,255,255,0.1)' }
+                },
+                y: {
+                    title: { display: true, text: 'Rating de Calidad (%)', color: '#f5c518', font: { size: 14 } },
+                    ticks: { color: 'rgba(255,255,255,0.7)' },
+                    grid: { color: 'rgba(255,255,255,0.1)' }
+                }
+            }
+        }
+    });
+}
+
 function compararAlAzar() {
     if (datosJuegos.length < 2) return;
 
@@ -316,5 +547,6 @@ function reproducirSonido(positivas, negativas) {
     audio.volume = 0.3; 
     audio.play();
 }
+
 
 cargarDatos();

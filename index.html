@@ -180,20 +180,31 @@
       <div class="tarjetas-graficos">
         <div class="tarjeta">
           <h3>Top juegos por reseñas positivas</h3>
-          <p>Aquí puedes poner un gráfico de barras con los juegos mejor evaluados.</p>
+          <canvas id="graficoResenas"></canvas>
         </div>
 
         <div class="tarjeta">
           <h3>Juegos con más dueños</h3>
-          <p>Aquí puedes poner un gráfico que muestre los juegos más populares.</p>
+          <canvas id="graficoDuenos"></canvas>
         </div>
 
         <div class="tarjeta">
-          <h3>Horas jugadas</h3>
-          <p>Aquí puedes visualizar cuáles juegos tienen mayor actividad reciente.</p>
+          <h3>Horas jugadas (Últimas 2 semanas)</h3>
+          <canvas id="graficoHoras"></canvas>
+        </div> </div> <div class="tarjeta tarjeta-grande">
+        <h3>Joyas vs Decepciones (Juegos Populares)</h3>
+        <p>
+          Comparación de juegos con <strong>más de 500,000 dueños</strong>. 
+          En <span style="color: #00d2c8; font-weight: bold;">celeste</span>: Juegos baratos (≤ $15) y muy bien valorados (≥ 80%). 
+          En <span style="color: #ff6384; font-weight: bold;">rojo</span>: Juegos mal valorados (< 60%).
+        </p>
+        <div class="contenedor-canvas-grande">
+          <canvas id="graficoComparacion"></canvas>
         </div>
       </div>
+
     </section>
+
 
     <!-- PÁGINA DE RANKING -->
     <section id="ranking" class="pagina">

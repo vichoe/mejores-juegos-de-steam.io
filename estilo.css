@@ -60,7 +60,6 @@ h1 {
   color: var(--accent-gold);
 }
 
-/* Contenedores de Entrada */
 .contenedor-comparacion {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -108,7 +107,6 @@ h1 {
   box-shadow: 0 0 10px rgba(245, 197, 24, 0.2);
 }
 
-/* Gráfico */
 .contenedor-grafico {
   background: var(--card-bg);
   padding: 40px;
@@ -119,7 +117,6 @@ h1 {
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
 }
 
-/* Sugerencias Autocompletado */
 .lista-sugerencias {
   position: absolute;
   top: 100%;
@@ -327,7 +324,6 @@ h1 {
   }
 }
 
-/*  ESTILOS PARA LA TABLA DE RANKING */
 .contenedor-tabla {
   width: 100%;
   max-width: 900px;
@@ -382,7 +378,6 @@ h1 {
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Efecto al pasar el mouse sobre una fila */
 #tabla-ranking tbody tr:hover {
   background-color: rgba(255, 255, 255, 0.05);
 }
@@ -644,7 +639,6 @@ h1 {
   font-size: 0.95rem;
 }
 
-/* Estilo para el botón al azar */
 .boton-azar {
   background: var(--accent-cyan);
   color: #0b0e14;
@@ -667,7 +661,6 @@ h1 {
 }
 
 
-/*ESTILOS PARA EL GRÁFICO GRANDE*/
 .tarjeta-grande {
   width: 100% !important;       
   max-width: 100% !important;    

@@ -172,9 +172,6 @@ function configurarBuscador() {
     document.getElementById('juego2').addEventListener('input', actualizarComparacion);
 }
 
-//function configurarBoton() {
-//    document.getElementById('btnComparar').addEventListener('click', actualizarComparacion);
-//}
 
 function crearDropdown(idInput, idLista) {
     const input = document.getElementById(idInput);
@@ -249,7 +246,6 @@ function mostrarSeccion(idSeccion, boton) {
     }
 }
 
-// FUNCIÓN DEL RANKING
 function generarRanking() {
     const cuerpoTabla = document.getElementById('cuerpo-ranking');
     if (!cuerpoTabla) return;
@@ -259,7 +255,6 @@ function generarRanking() {
 
         const dueños = juego["Estimated owners"] || 1; 
         
-        // FÓRMULA: Rating * log10(Dueños)
         const puntaje = (ratingNum * Math.log10(Math.max(dueños, 1))).toFixed(2);
 
         return {
@@ -270,11 +265,9 @@ function generarRanking() {
         };
     });
 
-    // Ordenamos de mayor a menor puntaje y tomamos los mejores 20
     rankingProcesado.sort((a, b) => b.score - a.score);
     const top20 = rankingProcesado.slice(0, 20);
 
-    // Limpiamos la tabla y generamos el HTML
     cuerpoTabla.innerHTML = '';
     top20.forEach((juego, indice) => {
         const fila = document.createElement('tr');
@@ -289,10 +282,9 @@ function generarRanking() {
     });
 }
 
-// FUNCIÓN PARA GENERAR LOS GRÁFICOS DE LA PESTAÑA "GRÁFICOS"
 function generarGraficosExtras() {
     const opcionesComunes = {
-        indexAxis: 'y', // Hace que las barras sean horizontales
+        indexAxis: 'y',
         responsive: true,
         plugins: {
             legend: { display: false } 
@@ -303,7 +295,6 @@ function generarGraficosExtras() {
         }
     };
 
-    // GRÁFICO 1: Reseñas Positivas 
     const topResenas = [...datosJuegos].sort((a, b) => (b.Positive || 0) - (a.Positive || 0)).slice(0, 10);
     
     new Chart(document.getElementById('graficoResenas').getContext('2d'), {
@@ -322,7 +313,6 @@ function generarGraficosExtras() {
         options: opcionesComunes
     });
 
-    // GRÁFICO 2: Juegos con más dueños 
     const topDuenos = [...datosJuegos].sort((a, b) => (b["Estimated owners"] || 0) - (a["Estimated owners"] || 0)).slice(0, 10);
     
     new Chart(document.getElementById('graficoDuenos').getContext('2d'), {
@@ -341,7 +331,6 @@ function generarGraficosExtras() {
         options: opcionesComunes
     });
 
-    // GRÁFICO 3: Horas Jugadas 
     const topHoras = [...datosJuegos].sort((a, b) => (b["Average playtime forever"] || 0) - (a["Average playtime forever"] || 0)).slice(0, 10);
     
     new Chart(document.getElementById('graficoHoras').getContext('2d'), {
@@ -361,7 +350,6 @@ function generarGraficosExtras() {
     });
 }
 
-// Variables globales para guardar los gráficos y poder actualizarlos al hacer clic
 let graficosInstancias = {};
 let topDatos = {};
 
@@ -370,7 +358,6 @@ function generarGraficosExtras() {
     topDatos.duenos = [...datosJuegos].sort((a, b) => (b["Estimated owners"] || 0) - (a["Estimated owners"] || 0));
     topDatos.horas = [...datosJuegos].sort((a, b) => (b["Average playtime forever"] || 0) - (a["Average playtime forever"] || 0));
 
-    // Configuración base de Chart.js
     const opcionesComunes = {
         indexAxis: 'y',
         responsive: true,
@@ -395,7 +382,6 @@ function generarGraficosExtras() {
         }
     };
 
-    // Función maestra para crear o actualizar un gráfico interactivo
     function dibujarGraficoFiltro(id, tipo, colorBase, borde, label) {
         const canvas = document.getElementById(id);
         const tarjeta = canvas.parentElement; 
@@ -403,7 +389,6 @@ function generarGraficosExtras() {
         const cantidad = canvas.dataset.cantidad ? parseInt(canvas.dataset.cantidad) : 10;
         const datosSlice = topDatos[tipo].slice(0, cantidad);
 
-        // Ajustamos la altura visual de la tarjeta
         tarjeta.style.height = cantidad === 10 ? '350px' : '650px';
         tarjeta.style.transition = 'height 0.4s ease'; 
         canvas.style.cursor = 'pointer'; 
@@ -444,21 +429,18 @@ function generarGraficosExtras() {
         }
     }
 
-    // 3. Inicializamos los 3 gráficos
     dibujarGraficoFiltro('graficoResenas', 'resenas', 'rgba(0, 210, 200, 0.6)', '#00d2c8', 'Reseñas Positivas');
     dibujarGraficoFiltro('graficoDuenos', 'duenos', 'rgba(245, 197, 24, 0.6)', '#f5c518', 'Dueños Estimados');
     dibujarGraficoFiltro('graficoHoras', 'horas', 'rgba(155, 89, 182, 0.6)', '#9b59b6', 'Horas Promedio');
 
-    // GRÁFICO 4: SCATTER COMPARATIVO (GRANDE) 
     
     const juegosMasivos = datosJuegos.filter(j => (j["Estimated owners"] || 0) >= 2000000);
 
-    // Grupo A: Baratos (<= 20 dólares) y EXCELENTEMENTE valorados (>= 90%)
     const joyasBaratas = juegosMasivos
         .filter(j => j.Price <= 20 && j.rating >= 90)
         .map(j => ({ x: j.Price, y: j.rating, name: j.Name, owners: j["Estimated owners"] }));
 
-    // Grupo B: Mal valorados (< 60%) y limitados a menos de 40 USD 
+
     const decepciones = juegosMasivos
         .filter(j => j.Price <= 40 && j.rating < 60)
         .map(j => ({ x: j.Price, y: j.rating, name: j.Name, owners: j["Estimated owners"] }));

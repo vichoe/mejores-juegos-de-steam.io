@@ -702,3 +702,63 @@ html {
 .navbar a {
   text-decoration: none;
 }
+
+.layout-comparacion {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  justify-content: center;
+  align-items: center;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.layout-comparacion .contenedor-grafico {
+  flex: 1 1 500px; 
+  margin: 0; 
+}
+
+.leyenda-grafico {
+  flex: 1 1 300px; 
+  background: var(--card-bg);
+  border: 1px solid var(--accent-cyan);
+  border-radius: 18px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 242, 255, 0.1);
+}
+
+.leyenda-grafico h4 {
+  color: var(--accent-cyan);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.4rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 0;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(0, 242, 255, 0.3);
+  padding-bottom: 10px;
+}
+
+.leyenda-grafico ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.leyenda-grafico li {
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: #d6d6d6;
+}
+
+.leyenda-grafico li strong {
+  color: var(--accent-gold);
+  display: block; 
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.2rem;
+  letter-spacing: 0.5px;
+  margin-bottom: 3px;
+}

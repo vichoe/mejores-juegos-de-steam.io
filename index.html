@@ -256,41 +256,53 @@
     </section>
 
 
-    <!-- COMPARAR JUEGOS -->
-    <section id="comparar" class="seccion-pagina">
+  <section id="comparar" class="seccion-pagina">
 
-      <h2>Comparar juegos</h2>
+  <h2>Comparar juegos</h2>
 
-      <p class="texto-centro">
-        Selecciona dos juegos para comparar sus características principales.
-        El sonido indica si el juego tiene más reseñas positivas que negativas.
-      </p>
+  <p class="texto-centro">
+    Selecciona dos juegos para comparar sus características principales.
+    El sonido indica si el juego tiene más reseñas positivas que negativas.
+  </p>
 
-      <div class="contenedor-comparacion">
+  <div class="contenedor-comparacion">
 
-        <div class="grupo-input autocompletado-contenedor">
-          <label for="juego1">Juego 1:</label>
-          <input type="text" id="juego1" placeholder="Ej: Elden Ring" autocomplete="off">
-          <ul id="listaJuego1" class="lista-sugerencias"></ul>
-        </div>
+    <div class="grupo-input autocompletado-contenedor">
+      <label for="juego1">Juego 1:</label>
+      <input type="text" id="juego1" placeholder="Ej: Elden Ring" autocomplete="off">
+      <ul id="listaJuego1" class="lista-sugerencias"></ul>
+    </div>
 
-        <div class="grupo-input autocompletado-contenedor">
-          <label for="juego2">Juego 2:</label>
-          <input type="text" id="juego2" placeholder="Ej: Dead by Daylight" autocomplete="off">
-          <ul id="listaJuego2" class="lista-sugerencias"></ul>
-        </div>
+    <div class="grupo-input autocompletado-contenedor">
+      <label for="juego2">Juego 2:</label>
+      <input type="text" id="juego2" placeholder="Ej: Dead by Daylight" autocomplete="off">
+      <ul id="listaJuego2" class="lista-sugerencias"></ul>
+    </div>
 
-      </div>
+  </div>
 
-      <div style="text-align: center; margin-bottom: 30px;">
-        <button id="btnAzar" class="boton-azar">🎲 Comparar al azar</button>
-      </div>
+  <div style="text-align: center; margin-bottom: 30px;">
+    <button id="btnAzar" class="boton-azar">🎲 Comparar al azar</button>
+  </div>
 
-      <div class="contenedor-grafico">
-        <canvas id="graficoRadar"></canvas>
-      </div>
+  <div class="layout-comparacion">
+    
+    <div class="contenedor-grafico">
+      <canvas id="graficoRadar"></canvas>
+    </div>
 
-    </section>
+    <aside class="leyenda-grafico">
+      <h4>¿Qué mide cada eje?</h4>
+      <ul>
+        <li><strong>Precio:</strong> El precio del juego al analizar en dólares, tiene tope en 60$ para no distorsionar mucho el gráfico.</li>
+        <li><strong>Tiempo de juego:</strong> Minutos de juego promedio jugados en Steam las últimas dos semanas.</li>
+        <li><strong>Rating:</strong> El porcentaje real de reseñas positivas.</li>
+        <li><strong>Dueños:</strong> La cantidad aproximada de dueños segun la base de datos.</li>
+      </ul>
+    </aside>
+
+  </div>
+  </section>
 
   </main>
 

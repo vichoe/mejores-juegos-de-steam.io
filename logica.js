@@ -1,30 +1,52 @@
 let miGrafico;
 let datosJuegos = [];
+let arraysOrdenados = {}; 
+const MAX_PRECIO = 60; 
+let maxLogDuenos = 1; 
+
+function calcularMaximosGlobales() {
+    arraysOrdenados.horas = datosJuegos.map(j => j["Average playtime forever"] || 0).sort((a, b) => a - b);
+    const maxDuenosAbsoluto = Math.max(...datosJuegos.map(j => j["Estimated owners"] || 1));
+    maxLogDuenos = Math.log10(maxDuenosAbsoluto);
+}
+
+function calcularPercentil(valor, arreglo) {
+    if (!valor || valor <= 0) return 0; 
+    let index = arreglo.findIndex(v => v >= valor);
+    if (index === -1) return 100; 
+    return (index / arreglo.length) * 100; 
+}
 
 async function cargarDatos() {
+    const respuesta = await fetch('datos/datos_radar.json');
+    datosJuegos = await respuesta.json();
+    
+    calcularMaximosGlobales();
 
-        const respuesta = await fetch('datos/datos_radar.json');
-        datosJuegos = await respuesta.json();
-        inicializarGrafico();
-        configurarBuscador(); 
-        configurarAutocompletado();
-        generarRanking();
-        generarGraficosExtras();
-                document.getElementById('btnAzar').addEventListener('click', compararAlAzar);
-
+    inicializarGrafico();
+    configurarBuscador(); 
+    configurarAutocompletado();
+    generarRanking();
+    generarGraficosExtras();
+    document.getElementById('btnAzar').addEventListener('click', compararAlAzar);
 }
 
 function inicializarGrafico() {
+    const formatoCorto = (num) => {
+        if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+        if (num >= 1000) return (num / 1000).toFixed(0) + 'k';
+        return num.toFixed(0);
+    };
     const ctx = document.getElementById('graficoRadar').getContext('2d');
     miGrafico = new Chart(ctx, {
         type: 'radar',
         data: {
-            labels: ['Precio', 'Tiempo de juego promedio', 'Reseñas Positivas', 'Reseñas Negativas', 'Dueños Aproximados'],
+            labels: ['Precio', 'Tiempo Jugado', 'Rating de Calidad (%)', 'Dueños'],
             datasets: [
                 {
                     label: 'Juego 1',
-                    data: [0, 0, 0, 0, 0],
-                    valoresReales: [0, 0, 0, 0, 0],
+                    data: [0, 0, 0, 0], 
+                    valoresReales: [0, 0, 0, 0], 
                     backgroundColor: 'rgba(245, 197, 24, 0.15)',
                     borderColor: '#f5c518',
                     pointBackgroundColor: '#f5c518',
@@ -34,8 +56,8 @@ function inicializarGrafico() {
                 },
                 {
                     label: 'Juego 2',
-                    data: [0, 0, 0, 0, 0],
-                    valoresReales: [0, 0, 0, 0, 0],
+                    data: [0, 0, 0, 0], 
+                    valoresReales: [0, 0, 0, 0], 
                     backgroundColor: 'rgba(0, 210, 200, 0.15)',
                     borderColor: '#00d2c8',
                     pointBackgroundColor: '#00d2c8',
@@ -56,37 +78,28 @@ function inicializarGrafico() {
                         font: { size: 10 },
                         stepSize: 20
                     },
-                    grid: {
-                        color: 'rgba(255,255,255,0.12)'
-                    },
-                    angleLines: {
-                        color: 'rgba(255,255,255,0.2)'
-                    },
-                    pointLabels: {
-                        color: '#d4c8f0',
-                        font: { size: 13, weight: '600' }
-                    }
+                    grid: { color: 'rgba(255,255,255,0.12)' },
+                    angleLines: { color: 'rgba(255,255,255,0.2)' },
+                    pointLabels: { color: '#d4c8f0', font: { size: 13, weight: '600' } }
                 }
             },
             plugins: {
                 legend: {
-                    labels: {
-                        color: '#e8e0f5',
-                        font: { size: 13 },
-                        usePointStyle: true
-                    }
+                    labels: { color: '#e8e0f5', font: { size: 13 }, usePointStyle: true }
                 },
                 tooltip: {
                     callbacks: {
                         label: function(context) {
                             const index = context.dataIndex;
                             const valorReal = context.dataset.valoresReales[index];
+                            const valorGrafico = context.raw; 
                             
                             if (index === 0) return ` $${valorReal}`; 
-                            if (index === 1) return ` ${valorReal.toLocaleString()} horas`;
-                            if (index === 4) return ` ${valorReal.toLocaleString()} dueños`;
+                            if (index === 1) return ` ${valorReal.toLocaleString()} minutos promedio jugados las últimas dos semanas (Supera al ${valorGrafico.toFixed(1)}%)`;
+                            if (index === 2) return ` ${valorReal}% de aprobación`;
+                            if (index === 3) return ` ${valorReal.toLocaleString()} dueños estimados`;
                             
-                            return ` ${valorReal.toLocaleString()}`; 
+                            return ""; 
                         }
                     }
                 }
@@ -118,38 +131,29 @@ function actualizarComparacion() {
     const v1 = juego1 ? [
         juego1.Price || 0,
         juego1["Average playtime forever"] || 0, 
-        juego1.Positive || 0,
-        juego1.Negative || 0,
+        juego1.rating || 0, 
         juego1["Estimated owners"] || 0 
-    ] : [0, 0, 0, 0, 0];
+    ] : [0, 0, 0, 0];
 
     const v2 = juego2 ? [
         juego2.Price || 0,
         juego2["Average playtime forever"] || 0, 
-        juego2.Positive || 0,
-        juego2.Negative || 0,
+        juego2.rating || 0, 
         juego2["Estimated owners"] || 0 
-    ] : [0, 0, 0, 0, 0];
-
-    const maxPrice = Math.max(v1[0], v2[0], 1); 
-    const maxPlaytime = Math.max(v1[1], v2[1], 1);
-    const maxReviews = Math.max(v1[2], v1[3], v2[2], v2[3], 1); 
-    const maxOwners = Math.max(v1[4], v2[4], 1);
+    ] : [0, 0, 0, 0];
 
     const dibujo1 = [
-        (v1[0] / maxPrice) * 100,
-        (v1[1] / maxPlaytime) * 100,
-        (v1[2] / maxReviews) * 100,
-        (v1[3] / maxReviews) * 100,
-        (v1[4] / maxOwners) * 100
+        Math.min((v1[0] / MAX_PRECIO) * 100, 100),
+        calcularPercentil(v1[1], arraysOrdenados.horas),
+        v1[2], 
+        v1[3] > 0 ? (Math.log10(v1[3]) / maxLogDuenos) * 100 : 0
     ];
 
     const dibujo2 = [
-        (v2[0] / maxPrice) * 100,
-        (v2[1] / maxPlaytime) * 100,
-        (v2[2] / maxReviews) * 100,
-        (v2[3] / maxReviews) * 100,
-        (v2[4] / maxOwners) * 100
+        Math.min((v2[0] / MAX_PRECIO) * 100, 100),
+        calcularPercentil(v2[1], arraysOrdenados.horas),
+        v2[2], 
+        v2[3] > 0 ? (Math.log10(v2[3]) / maxLogDuenos) * 100 : 0
     ];
 
     miGrafico.data.datasets[0].data = dibujo1;
@@ -200,7 +204,7 @@ function crearDropdown(idInput, idLista) {
                     input.value = juego.Name; 
                     lista.style.display = 'none'; 
                     actualizarComparacion();          
-                    reproducirSonido(juego.Positive || 0, juego.Negative || 0);
+                    reproducirSonido(juego.rating || 0);
                 });
 
                 lista.appendChild(itemLi);
@@ -535,20 +539,20 @@ function compararAlAzar() {
 
     setTimeout(() => {
         actualizarComparacion();
-        reproducirSonido(juegoAzar1.Positive || 0, juegoAzar1.Negative || 0);
-    }, 800); 
+        reproducirSonido(juegoAzar1.rating || 0);    }, 800); 
 }
 
-function reproducirSonido(positivas, negativas) {
+function reproducirSonido(rating) {
     let audio;
-    if (positivas > negativas) {
+    
+    if (rating > 50) {
         audio = new Audio('sonidos/bueno.mp3');
     } else {
         audio = new Audio('sonidos/malo.mp3');
     }
 
     audio.volume = 0.3; 
-    audio.play();
+    audio.play().catch(error => console.log("El navegador bloqueó el audio:", error));
 }
 
 

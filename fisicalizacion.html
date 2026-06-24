@@ -78,7 +78,7 @@
     }
 
     Protobject.Core.onReceived((datos) => {
-      const x = 100 - datos.x;
+      const x = datos.x;
       const y = 100 - datos.y;
 
       cursor.style.left = `${x}%`;

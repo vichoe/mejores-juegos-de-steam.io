@@ -17,19 +17,20 @@
     .joya { background: #00d2c8; box-shadow: 0 0 10px #00d2c8; }
     .decepcion { background: #ff6384; opacity: 0.4; }
     #info { margin-top: 40px; font-size: 1.2rem; color: #d6d6d6; font-family: 'Rajdhani', sans-serif; text-align: center; max-width: 800px;}
-    #ProtobjectPlusButton { top: 100px !important; left: 20px !important; border-radius: 30px !important; z-index: 2000; }
-    #ProtobjectPlusButton:after { content: " Conectar celular"; }
+    
+    /* EL CULPABLE SOLUCIONADO: CSS exacto del botón de tu código de referencia */
+    #ProtobjectPlusButton {
+    bottom: 30px !important;
+    right: 30px !important;
+    top: auto !important;
+    left: auto !important;
+    z-index: 999999 !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+    /* Elimina los overrides de width, height, padding, font-size, white-space, border-radius */
+    }
+/* Elimina completamente el ::after */
   </style>
-
-  <script>
-    window.onerror = function(mensaje, origen, linea) {
-      const infoDiv = document.getElementById('info');
-      if (infoDiv) {
-        infoDiv.innerHTML = `❌ Error fatal en la línea ${linea}: <br> ${mensaje}`;
-        infoDiv.style.color = "#ff6384";
-      }
-    };
-  </script>
 </head>
 <body>
 
@@ -44,7 +45,7 @@
   <main class="contenido">
     <div class="hero" style="margin-top: 20px; text-align:center;">
       <h2 style="color: #00d2c8; margin-top: 0;">Radar de Tesoros Ocultos</h2>
-      <p class="bajada">Conecta tu celular y usa el giroscopio para buscar juegos.</p>
+      <p class="bajada">Haz clic en el botón conectar, escanea el QR con tu celular y usa el giroscopio para buscar juegos.</p>
     </div>
 
     <div id="contenedor-radar-tesoros">
@@ -65,7 +66,6 @@
     let joyas = [];
     let decepciones = [];
 
-    // --- CARGAR DATOS ---
     async function cargarDatosParaRadar() {
       try {
           const respuesta = await fetch('datos/datos_radar.json');
@@ -82,7 +82,7 @@
           dibujarPuntos(joyas, 'joya');
           dibujarPuntos(decepciones, 'decepcion');
           
-          info.innerHTML = "¡Datos cargados! Haz clic en 'Conectar celular' (botón flotante arriba a la izquierda).";
+          info.innerHTML = "¡Datos cargados! Haz clic en el botón flotante arriba a la izquierda para conectar tu celular.";
           info.style.color = "#00d2c8";
       } catch (error) {
           info.innerHTML = "❌ Error al cargar datos: " + error.message;
@@ -100,12 +100,10 @@
       });
     }
 
-    // --- SINTETIZADOR DE AUDIO (Corregido para bloqueos) ---
     let audioCtx = null;
     let ultimoClic = 0;
 
     function hacerClic(frecuencia) {
-      // Solo se crea si ya empezamos a interactuar
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (audioCtx.state === 'suspended') audioCtx.resume();
       
@@ -121,7 +119,7 @@
       osc.stop(audioCtx.currentTime + 0.05);
     }
 
-    // --- CONEXIÓN DE PROTOBJECT ---
+    // Recibir la inclinación del celular
     Protobject.Core.onReceived((datos) => {
       cursor.style.left = `${datos.x}%`;
       cursor.style.top = `${datos.y}%`;
@@ -146,6 +144,7 @@
 
         if (ahora - ultimoClic > intervalo) {
           hacerClic(frecuencia);
+          // Le enviamos la señal de vibrar al celular
           Protobject.Core.send({ vibrar: true, duracion: 30 }).to("sensor.html");
           ultimoClic = ahora;
         }

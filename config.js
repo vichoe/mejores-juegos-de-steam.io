@@ -1,9 +1,9 @@
-Protobject.setProduction(true);
+Protobject.setProduction(false);
 
 Protobject.initialize([
   {
     name: "Pantalla",
-    page: "fisicalizacion.html", // <-- Tiene que decir esto, NO index.html
+    page: "fisicalizacion.html", 
     main: true,
     debug: "master",
   },

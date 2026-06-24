@@ -6,65 +6,80 @@
   <title>Sensor Radar</title>
   <style>
     * { box-sizing: border-box; }
-    body { font-family: sans-serif; padding: 20px; margin: 0; background: #fafafa; text-align: center; }
-    #instr { font-size: 22px; margin-top: 20px; color: #333; }
-    #valor { font-size: 40px; margin: 30px 0; color: #2a7; font-weight: bold; }
-    button { display: block; width: 100%; font-weight: bold; border: none; border-radius: 14px; margin: 15px 0; padding: 25px; font-size: 22px; cursor: pointer; }
+    body {
+      font-family: sans-serif; padding: 20px; margin: 0;
+      background: #1a1c2c; text-align: center; color: #d6d6d6;
+    }
+    #instr { font-size: 22px; margin-top: 20px; color: #d6d6d6; }
+    #valor { font-size: 36px; margin: 30px 0; color: #00d2c8; font-weight: bold; }
+    button {
+      display: block; width: 100%;
+      font-weight: bold; border: none; border-radius: 14px;
+      margin: 15px 0; padding: 25px; font-size: 22px; cursor: pointer;
+      touch-action: manipulation;
+    }
     #permiso { background: #e63946; color: white; }
-    #calibrar { background: #2a7; color: white; }
-    #calibrar:active { background: #1a5; }
+    #calibrar { background: #00d2c8; color: #1a1c2c; display: none; }
+    #calibrar:active { background: #00aaa6; }
   </style>
 </head>
 <body>
 
   <button id="permiso">PEDIR PERMISO DE ORIENTACIÓN</button>
   <div id="instr">Pon el teléfono frente a ti como una linterna.</div>
-  <button id="calibrar" style="display:none">📍 CALIBRAR CENTRO</button>
+  <button id="calibrar">📍 CALIBRAR CENTRO</button>
   <div id="valor">—</div>
 
   <script src="https://app.protobject.com/framework/p.js"></script>
-
   <script>
-    const instr = document.getElementById("instr");
-    const valorEl = document.getElementById("valor");
-    const btnCalibrar = document.getElementById("calibrar");
-    const btnPermiso = document.getElementById("permiso");
+    const instr    = document.getElementById("instr");
+    const valorEl  = document.getElementById("valor");
+    const btnCal   = document.getElementById("calibrar");
+    const btnPerm  = document.getElementById("permiso");
 
-    let origenBeta = null;
+    let origenBeta  = null;
     let origenGamma = null;
 
-    // Recibir la orden de vibrar desde el PC
+    // Recibir orden de vibrar desde la pantalla
     Protobject.Core.onReceived((msg) => {
       if (msg.vibrar && navigator.vibrate) {
-        navigator.vibrate(msg.duracion);
+        navigator.vibrate(msg.duracion || 30);
       }
     });
 
-    // Leer el giroscopio
     function handler(event) {
-      if (origenBeta === null || event.beta === null || event.gamma === null) return;
+      if (event.beta === null || event.gamma === null) return;
+      if (origenBeta === null) return; // sin calibrar aún
 
-      let dy = event.beta - origenBeta;   
-      let dx = event.gamma - origenGamma; 
+      let dy = event.beta  - origenBeta;
+      let dx = event.gamma - origenGamma;
 
+      // Limitar rango a ±45°
       dx = Math.max(-45, Math.min(45, dx));
       dy = Math.max(-45, Math.min(45, dy));
 
-      let posX = ((dx + 45) / 90) * 100;
-      let posY = ((dy + 45) / 90) * 100;
-      posY = 100 - posY; 
+      // Convertir a porcentaje 0-100
+      const posX = ((dx + 45) / 90) * 100;
+      const posY = ((dy + 45) / 90) * 100;
 
       valorEl.textContent = `X: ${Math.round(posX)}% | Y: ${Math.round(posY)}%`;
-
-      // Enviar los datos exactos a fisicalizacion.html
       Protobject.Core.send({ x: posX, y: posY }).to("fisicalizacion.html");
     }
 
-    btnPermiso.addEventListener("click", async () => {
+    function iniciar() {
+      btnPerm.style.display = "none";
+      btnCal.style.display  = "block";
+      instr.textContent = "Pon el teléfono al centro y toca calibrar.";
+      window.addEventListener("deviceorientation", handler, true);
+    }
+
+    btnPerm.addEventListener("click", async () => {
       try {
-        if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
-          const respuesta = await DeviceOrientationEvent.requestPermission();
-          if (respuesta === "granted") iniciar();
+        if (typeof DeviceOrientationEvent !== "undefined" &&
+            typeof DeviceOrientationEvent.requestPermission === "function") {
+          const r = await DeviceOrientationEvent.requestPermission();
+          if (r === "granted") iniciar();
+          else instr.textContent = "Permiso denegado. Recarga e intenta de nuevo.";
         } else {
           iniciar();
         }
@@ -73,28 +88,29 @@
       }
     });
 
-    function iniciar() {
-      btnPermiso.style.display = "none";
-      btnCalibrar.style.display = "block";
-      instr.textContent = "Pon el teléfono al centro y toca calibrar.";
-      window.addEventListener("deviceorientation", handler, true);
+    function calibrar(e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      // Capturar posición actual como centro
+      const captura = (ev) => {
+        origenBeta  = ev.beta;
+        origenGamma = ev.gamma;
+        instr.textContent = "✓ Calibrado. Inclina el celular para mover la mira.";
+        btnCal.textContent = "🔄 RECALIBRAR";
+        window.removeEventListener("deviceorientation", captura);
+      };
+      window.addEventListener("deviceorientation", captura);
     }
 
-    btnCalibrar.addEventListener("click", () => {
-      const tempHandler = (e) => {
-        origenBeta = e.beta;
-        origenGamma = e.gamma;
-        instr.textContent = "✓ Calibrado. Inclina el celular para mover la mira en tu PC.";
-        btnCalibrar.textContent = "🔄 RECALIBRAR";
-        window.removeEventListener("deviceorientation", tempHandler);
-      };
-      window.addEventListener("deviceorientation", tempHandler);
-    });
+    btnCal.addEventListener("touchstart", calibrar);
+    btnCal.addEventListener("click", calibrar);
 
-    if (typeof DeviceOrientationEvent === "undefined" || typeof DeviceOrientationEvent.requestPermission !== "function") {
+    // Android no necesita permiso explícito
+    if (typeof DeviceOrientationEvent === "undefined" ||
+        typeof DeviceOrientationEvent.requestPermission !== "function") {
       iniciar();
     }
   </script>
+
   <script src="config.js"></script>
 </body>
 </html>

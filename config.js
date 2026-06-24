@@ -1,9 +1,8 @@
 Protobject.setProduction(true);
-
 Protobject.initialize([
   {
     name: "Pantalla",
-    page: "fisicalizacion.html", 
+    page: "fisicalizacion.html",
     main: true,
     debug: "master",
   },

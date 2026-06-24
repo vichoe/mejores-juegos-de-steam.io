@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Sensor Buscador</title>
+  <style>
+    body { font-family: sans-serif; background: #1a1c2c; color: white; text-align: center; padding: 20px; }
+    h1 { color: #f5c518; }
+    #instr { font-size: 18px; margin-top: 20px; color: #d6d6d6; }
+    button { display: block; width: 100%; padding: 20px; font-size: 20px; font-weight: bold; background: #00d2c8; color: #0b0e14; border: none; border-radius: 15px; margin: 20px 0; cursor: pointer; }
+    button:active { background: #00a099; }
+    #status { font-size: 24px; margin: 30px 0; font-weight: bold; color: #00d2c8; }
+  </style>
+</head>
+<body>
+
+  <h1>Buscador de Tesoros</h1>
+  <div id="instr">Sostén el teléfono plano como un control remoto.</div>
+  
+  <button id="btnEmpezar">PEDIR PERMISOS Y EMPEZAR</button>
+  <button id="btnCalibrar" style="display:none;">📍 FIJAR CENTRO</button>
+  
+  <div id="status">—</div>
+
+  <script src="https://app.protobject.com/framework/p.js"></script>
+
+  <script>
+    const btnEmpezar = document.getElementById("btnEmpezar");
+    const btnCalibrar = document.getElementById("btnCalibrar");
+    const statusEl = document.getElementById("status");
+
+    let origenBeta = 0;
+    let origenGamma = 0;
+    let calibrado = false;
+
+    // --- RECEPCIÓN DE VIBRACIÓN DESDE EL PC ---
+    Protobject.Core.onReceived((msg) => {
+      if (msg.vibrar) {
+        // Ejecuta la vibración nativa del celular
+        if (navigator.vibrate) navigator.vibrate(msg.duracion);
+      }
+    });
+
+    function handler(event) {
+      if (!calibrado || event.beta === null || event.gamma === null) return;
+
+      // Inclinación relativa al centro calibrado
+      let dy = event.beta - origenBeta;   // Adelante/Atrás
+      let dx = event.gamma - origenGamma; // Izquierda/Derecha
+
+      // Limitamos el ángulo a 45 grados para que no haya que torcerse entero
+      dx = Math.max(-45, Math.min(45, dx));
+      dy = Math.max(-45, Math.min(45, dy));
+
+      // Mapeamos de -45 a 45 grados a un porcentaje (0% a 100%)
+      let posX = ((dx + 45) / 90) * 100;
+      let posY = ((dy + 45) / 90) * 100;
+
+      // Invertimos Y para que inclinar adelante suba la mira
+      posY = 100 - posY; 
+
+      Protobject.Core.send({ x: posX, y: posY }).to("fisicalizacion.html");
+      statusEl.textContent = `X: ${posX.toFixed(0)}% | Y: ${posY.toFixed(0)}%`;
+    }
+
+    btnEmpezar.addEventListener("click", async () => {
+      if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
+        const respuesta = await DeviceOrientationEvent.requestPermission();
+        if (respuesta === "granted") iniciar();
+      } else {
+        iniciar();
+      }
+    });
+
+    function iniciar() {
+      btnEmpezar.style.display = "none";
+      btnCalibrar.style.display = "block";
+      document.getElementById("instr").textContent = "Pon el teléfono plano (centro) y toca FIJAR CENTRO.";
+      window.addEventListener("deviceorientation", handler, true);
+    }
+
+    btnCalibrar.addEventListener("click", () => {
+      // Leer una vez el valor actual y guardarlo como centro
+      const tempHandler = (e) => {
+        origenBeta = e.beta;
+        origenGamma = e.gamma;
+        calibrado = true;
+        btnCalibrar.textContent = "🔄 RECALIBRAR CENTRO";
+        window.removeEventListener("deviceorientation", tempHandler);
+      };
+      window.addEventListener("deviceorientation", tempHandler);
+    });
+  </script>
+
+  <script src="config.js"></script>
+</body>
+</html>

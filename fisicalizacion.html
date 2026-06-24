@@ -4,107 +4,19 @@
   <meta charset="utf-8">
   <title>Fisicalización - Mejores Juegos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="estilo.css">
-  <style>
-    #contenedor-radar-tesoros {
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      margin-top: 50px;
-    }
-    #mapa {
-      width: 800px; height: 500px;
-      background-color: rgba(26, 28, 44, 0.9);
-      background-image:
-        linear-gradient(rgba(0, 210, 200, 0.1) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 210, 200, 0.1) 1px, transparent 1px);
-      background-size: 50px 50px;
-      border: 2px solid #00d2c8; border-radius: 10px;
-      position: relative;
-      box-shadow: 0 0 30px rgba(0, 210, 200, 0.2);
-      overflow: hidden;
-    }
-    .eje-y {
-      position: absolute; left: -80px; top: 50%;
-      transform: translateY(-50%) rotate(-90deg);
-      color: #d6d6d6; font-weight: bold;
-      font-family: 'Rajdhani', sans-serif; letter-spacing: 1px;
-    }
-    .eje-x {
-      position: absolute; bottom: -30px; left: 50%;
-      transform: translateX(-50%);
-      color: #d6d6d6; font-weight: bold;
-      font-family: 'Rajdhani', sans-serif; letter-spacing: 1px;
-    }
-    #cursor {
-      width: 30px; height: 30px;
-      border: 3px solid #f5c518; border-radius: 50%;
-      position: absolute; left: 50%; top: 50%;
-      transform: translate(-50%, -50%);
-      transition: left 0.1s linear, top 0.1s linear;
-      z-index: 10; box-shadow: 0 0 15px #f5c518;
-      pointer-events: none;
-    }
-    #cursor::after {
-      content: '+'; color: #f5c518;
-      position: absolute; top: 50%; left: 50%;
-      transform: translate(-50%, -50%); font-weight: bold;
-    }
-    .punto {
-      position: absolute; width: 12px; height: 12px;
-      border-radius: 50%; transform: translate(-50%, -50%); opacity: 0.7;
-    }
-    .joya     { background: #00d2c8; box-shadow: 0 0 10px #00d2c8; }
-    .decepcion { background: #ff6384; opacity: 0.4; }
-    #info {
-      margin-top: 40px; font-size: 1.2rem; color: #d6d6d6;
-      font-family: 'Rajdhani', sans-serif; text-align: center; max-width: 800px;
-    }
-
-    /* Botón de Protobject: solo posición, sin tocar nada más */
-    #ProtobjectPlusButton {
-      top: 20px !important;
-      left: 20px !important;
-      right: auto !important;
-      bottom: auto !important;
-    }
-    #ProtobjectPlusButton:after {
-      content: " Conectar celular";
-    }
-  </style>
 </head>
 <body>
 
-  <header class="encabezado">
-    <div class="marca"><h1>Mejores Juegos</h1></div>
-    <nav class="navbar">
-      <a class="nav-btn" href="index.html">Volver al Proyecto</a>
-      <a class="nav-btn activo" style="color: #00d2c8; border-color: #00d2c8;" href="fisicalizacion.html">Fisicalización</a>
-    </nav>
-  </header>
+  <h1>Radar de Tesoros Ocultos</h1>
+  <p>Conecta tu celular con el botón flotante para empezar.</p>
 
-  <main class="contenido">
-    <div class="hero" style="margin-top: 20px; text-align:center;">
-      <h2 style="color: #00d2c8; margin-top: 0;">Radar de Tesoros Ocultos</h2>
-      <p class="bajada">Haz clic en el botón "Conectar celular", escanea el QR y usa el giroscopio para buscar juegos.</p>
-    </div>
+  <div id="mapa" style="width:800px; height:500px; border:2px solid black; position:relative; overflow:hidden;">
+    <div id="cursor" style="width:30px; height:30px; border:3px solid orange; border-radius:50%; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); pointer-events:none;">+</div>
+  </div>
 
-    <div id="contenedor-radar-tesoros">
-      <div style="position: relative;">
-        <div class="eje-y">Rating de Calidad (%)</div>
-        <div id="mapa">
-          <div id="cursor"></div>
-        </div>
-        <div class="eje-x">Precio (USD)</div>
-      </div>
-      <div id="info">Cargando datos reales...</div>
-    </div>
-  </main>
+  <div id="info">Cargando datos reales...</div>
 
-  <!-- 1. Primero p.js -->
   <script src="https://app.protobject.com/framework/p.js"></script>
-
-  <!-- 2. Lógica de la pantalla -->
   <script>
     const mapa   = document.getElementById('mapa');
     const cursor = document.getElementById('cursor');
@@ -112,7 +24,6 @@
     let joyas = [];
     let decepciones = [];
 
-    // --- Carga de datos ---
     async function cargarDatosParaRadar() {
       try {
         const respuesta = await fetch('datos/datos_radar.json');
@@ -123,49 +34,37 @@
 
         joyas = masivos
           .filter(j => (j.Price || 0) <= 20 && (j.rating || 0) >= 90)
-          .map(j => ({
-            nombre: j.Name,
-            x: ((j.Price || 0) / 80) * 100,
-            y: (j.rating || 0)
-          }));
+          .map(j => ({ nombre: j.Name, x: ((j.Price || 0) / 80) * 100, y: (j.rating || 0) }));
 
         decepciones = masivos
           .filter(j => (j.Price || 0) <= 40 && (j.rating || 0) < 60)
-          .map(j => ({
-            nombre: j.Name,
-            x: ((j.Price || 0) / 80) * 100,
-            y: (j.rating || 0)
-          }));
+          .map(j => ({ nombre: j.Name, x: ((j.Price || 0) / 80) * 100, y: (j.rating || 0) }));
 
-        dibujarPuntos(joyas, 'joya');
-        dibujarPuntos(decepciones, 'decepcion');
+        dibujarPuntos(joyas, 'cyan');
+        dibujarPuntos(decepciones, 'red');
 
-        info.innerHTML = "¡Datos cargados! Haz clic en <strong>Conectar celular</strong> (arriba a la izquierda) para empezar.";
-        info.style.color = "#00d2c8";
+        info.textContent = "¡Datos cargados!";
       } catch (error) {
-        info.innerHTML = "❌ Error al cargar datos: " + error.message;
-        info.style.color = "#ff6384";
+        info.textContent = "❌ Error al cargar datos: " + error.message;
       }
     }
 
-    function dibujarPuntos(arreglo, claseCSS) {
+    function dibujarPuntos(arreglo, color) {
       arreglo.forEach(p => {
         const div = document.createElement('div');
-        div.className = `punto ${claseCSS}`;
+        div.style.cssText = `width:12px; height:12px; border-radius:50%; background:${color}; position:absolute; transform:translate(-50%,-50%);`;
         div.style.left = `${Math.min(p.x, 100)}%`;
         div.style.top  = `${100 - p.y}%`;
         mapa.appendChild(div);
       });
     }
 
-    // --- Audio ---
     let audioCtx   = null;
     let ultimoClic = 0;
 
     function hacerClic(frecuencia) {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (audioCtx.state === 'suspended') audioCtx.resume();
-
       const osc  = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.connect(gain);
@@ -178,7 +77,6 @@
       osc.stop(audioCtx.currentTime + 0.05);
     }
 
-    // --- Recibir datos del celular ---
     Protobject.Core.onReceived((datos) => {
       cursor.style.left = `${datos.x}%`;
       cursor.style.top  = `${datos.y}%`;
@@ -188,44 +86,31 @@
       let joyaCercana = null;
 
       joyas.forEach(j => {
-        const dx   = j.x - datos.x;
-        const dy   = j.y - cursorRating;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < distanciaMinima) {
-          distanciaMinima = dist;
-          joyaCercana = j;
-        }
+        const dist = Math.sqrt((j.x - datos.x) ** 2 + (j.y - cursorRating) ** 2);
+        if (dist < distanciaMinima) { distanciaMinima = dist; joyaCercana = j; }
       });
 
       const ahora = Date.now();
 
       if (distanciaMinima < 20) {
-        info.innerHTML    = `¡Tesoro cerca! Buscando...`;
-        info.style.color  = "#00d2c8";
-
+        info.textContent = "¡Tesoro cerca! Buscando...";
         const intervalo  = Math.max(50, distanciaMinima * 25);
         const frecuencia = 800 - (distanciaMinima * 20);
-
         if (ahora - ultimoClic > intervalo) {
           hacerClic(frecuencia);
           Protobject.Core.send({ vibrar: true, duracion: 30 }).to("sensor.html");
           ultimoClic = ahora;
         }
-
         if (distanciaMinima < 3) {
-          info.innerHTML   = `¡ENCONTRASTE: <strong>${joyaCercana.nombre}</strong>!`;
-          info.style.color = "#f5c518";
+          info.textContent = "¡ENCONTRASTE: " + joyaCercana.nombre + "!";
         }
       } else {
-        info.innerHTML   = `Zonas vacías o decepcionantes...`;
-        info.style.color = "#ff6384";
+        info.textContent = "Zonas vacías o decepcionantes...";
       }
     });
 
     cargarDatosParaRadar();
   </script>
-
-  <!-- 3. config.js siempre al final -->
   <script src="config.js"></script>
 
 </body>

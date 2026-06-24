@@ -78,15 +78,18 @@
     }
 
     Protobject.Core.onReceived((datos) => {
-      cursor.style.left = `${datos.x}%`;
-      cursor.style.top  = `${datos.y}%`;
+      const x = 100 - datos.x;
+      const y = 100 - datos.y;
 
-      const cursorRating = 100 - datos.y;
+      cursor.style.left = `${x}%`;
+      cursor.style.top  = `${y}%`;
+
+      const cursorRating = 100 - y;
       let distanciaMinima = Infinity;
       let joyaCercana = null;
 
       joyas.forEach(j => {
-        const dist = Math.sqrt((j.x - datos.x) ** 2 + (j.y - cursorRating) ** 2);
+        const dist = Math.sqrt((j.x - x) ** 2 + (j.y - cursorRating) ** 2);
         if (dist < distanciaMinima) { distanciaMinima = dist; joyaCercana = j; }
       });
 

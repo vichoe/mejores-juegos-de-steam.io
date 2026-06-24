@@ -1,0 +1,51 @@
+<div style="position: relative;">
+  <div class="eje-y">Rating de Calidad (0 - 100%)</div>
+  <div id="mapa">
+    <div id="cursor"></div>
+  </div>
+  <div class="eje-x">Precio ($0 - $80 USD)</div>
+</div>
+<div id="info">Cargando datos reales...</div>
+
+<script src="https://app.protobject.com/framework/p.js"></script>
+
+<script>
+  const mapa = document.getElementById('mapa');
+  const cursor = document.getElementById('cursor');
+  const info = document.getElementById('info');
+  
+  let joyas = [];
+  let decepciones = [];
+
+  async function cargarDatosParaRadar() {
+      const respuesta = await fetch('datos/datos_radar.json');
+      const datosJuegos = await respuesta.json();
+
+      const masivos = datosJuegos.filter(j => (j["Estimated owners"] || 0) >= 2000000);
+
+      joyas = masivos
+          .filter(j => j.Price <= 20 && j.rating >= 90)
+          .map(j => ({ nombre: j.Name, x: (j.Price / 80) * 100, y: j.rating }));
+
+      decepciones = masivos
+          .filter(j => j.Price <= 40 && j.rating < 60)
+          .map(j => ({ nombre: j.Name, x: (j.Price / 80) * 100, y: j.rating }));
+
+      dibujarPuntos(joyas, 'joya');
+      dibujarPuntos(decepciones, 'decepcion');
+  }
+
+  function dibujarPuntos(arreglo, claseCSS) {
+    arreglo.forEach(p => {
+      let div = document.createElement('div');
+      div.className = `punto ${claseCSS}`;
+      div.style.left = `${Math.min(p.x, 100)}%`; 
+      div.style.top = `${100 - p.y}%`; 
+      mapa.appendChild(div);
+    });
+  }
+
+  cargarDatosParaRadar();
+
+</script>
+<script src="config.js"></script>

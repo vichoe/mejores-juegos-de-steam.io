@@ -7,8 +7,8 @@
 </head>
 <body>
 
-  <h1>Radar de Tesoros Ocultos</h1>
-  <p>Conecta tu celular con el botón flotante para empezar.</p>
+  <h1>Torre de Juegos</h1>
+  <p>Conecta tu celular con el botón flotante para explorar 10 juegos aleatorios.</p>
 
   <div id="mapa" style="width:800px; height:500px; border:2px solid black; position:relative; overflow:hidden;">
     <div id="cursor" style="width:30px; height:30px; border:3px solid orange; border-radius:50%; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); pointer-events:none;">+</div>
@@ -21,100 +21,216 @@
     const mapa   = document.getElementById('mapa');
     const cursor = document.getElementById('cursor');
     const info   = document.getElementById('info');
-    let joyas = [];
-    let decepciones = [];
 
-    async function cargarDatosParaRadar() {
+    let juegosTorre = [];
+    let audioCtx = null;
+    let ultimoClic = 0;
+
+    function mezclarArreglo(arreglo) {
+      for (let i = arreglo.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arreglo[i], arreglo[j]] = [arreglo[j], arreglo[i]];
+      }
+      return arreglo;
+    }
+
+    function mapear(valor, inMin, inMax, outMin, outMax) {
+      if (inMax === inMin) return outMin;
+      const proporcion = (valor - inMin) / (inMax - inMin);
+      return outMin + proporcion * (outMax - outMin);
+    }
+
+    function limpiarTorre() {
+      mapa.querySelectorAll('.bloque-juego').forEach(el => el.remove());
+    }
+
+    async function cargarDatosTorre() {
       try {
         const respuesta = await fetch('datos/datos_radar.json');
         if (!respuesta.ok) throw new Error("No se pudo leer el archivo JSON.");
 
-        const datosJuegos = await respuesta.json();
-        const masivos = datosJuegos.filter(j => (j["Estimated owners"] || 0) >= 2000000);
+        const datos = await respuesta.json();
 
-        joyas = masivos
-          .filter(j => (j.Price || 0) <= 20 && (j.rating || 0) >= 90)
-          .map(j => ({ nombre: j.Name, x: ((j.Price || 0) / 80) * 100, y: (j.rating || 0) }));
+      // Tomamos juegos con nombre, precio y rating válidos
+        const candidatos = datos.filter(j =>
+          typeof j.Name === 'string' &&
+          j.Name.trim() !== '' &&
+          !isNaN(Number(j.Price)) &&
+          !isNaN(Number(j.rating))
+        );
 
-        decepciones = masivos
-          .filter(j => (j.Price || 0) <= 40 && (j.rating || 0) < 60)
-          .map(j => ({ nombre: j.Name, x: ((j.Price || 0) / 80) * 100, y: (j.rating || 0) }));
-
-        dibujarPuntos(joyas, 'cyan');
-        dibujarPuntos(decepciones, 'red');
-
-        info.textContent = "¡Datos cargados!";
-      } catch (error) {
-        info.textContent = "❌ Error al cargar datos: " + error.message;
-      }
-    }
-
-    function dibujarPuntos(arreglo, color) {
-      arreglo.forEach(p => {
-        const div = document.createElement('div');
-        div.style.cssText = `width:12px; height:12px; border-radius:50%; background:${color}; position:absolute; transform:translate(-50%,-50%);`;
-        div.style.left = `${Math.min(p.x, 100)}%`;
-        div.style.top  = `${100 - p.y}%`;
-        mapa.appendChild(div);
-      });
-    }
-
-    let audioCtx   = null;
-    let ultimoClic = 0;
-
-    function hacerClic(frecuencia) {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      const osc  = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(frecuencia, audioCtx.currentTime);
-      gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.05);
-    }
-
-    Protobject.Core.onReceived((datos) => {
-      const x = datos.x;
-      const y = 100 - datos.y;
-
-      cursor.style.left = `${x}%`;
-      cursor.style.top  = `${y}%`;
-
-      const cursorRating = 100 - y;
-      let distanciaMinima = Infinity;
-      let joyaCercana = null;
-
-      joyas.forEach(j => {
-        const dist = Math.sqrt((j.x - x) ** 2 + (j.y - cursorRating) ** 2);
-        if (dist < distanciaMinima) { distanciaMinima = dist; joyaCercana = j; }
-      });
-
-      const ahora = Date.now();
-
-      if (distanciaMinima < 20) {
-        info.textContent = "¡Tesoro cerca! Buscando...";
-        const intervalo  = Math.max(50, distanciaMinima * 25);
-        const frecuencia = 800 - (distanciaMinima * 20);
-        if (ahora - ultimoClic > intervalo) {
-          hacerClic(frecuencia);
-          Protobject.Core.send({ vibrar: true, duracion: 30 }).to("sensor.html");
-          ultimoClic = ahora;
+        if (candidatos.length < 10) {
+          throw new Error("No hay suficientes juegos válidos para construir la torre.");
         }
-        if (distanciaMinima < 3) {
-          info.textContent = "¡ENCONTRASTE: " + joyaCercana.nombre + "!";
-        }
-      } else {
-        info.textContent = "Zonas vacías o decepcionantes...";
+
+      // Elegimos 10 juegos aleatorios
+      const seleccion = mezclarArreglo([...candidatos]).slice(0, 10);
+
+      juegosTorre = seleccion.map((j, index) => ({
+        nombre: j.Name,
+        precio: Number(j.Price) || 0,
+        rating: Number(j.rating) || 0,
+        owners: Number(j["Estimated owners"]) || 0,
+        nivel: index + 1
+      }));
+
+      dibujarTorre();
+      info.textContent = "¡10 juegos cargados en la torre!";
+    } catch (error) {
+      info.textContent = "❌ Error al cargar datos: " + error.message;
+    }
+  }
+
+  function dibujarTorre() {
+    limpiarTorre();
+
+    const anchoBloque = 260;
+    const altoBloque = 28;
+    const separacion = 12;
+
+    const baseX = mapa.clientWidth / 2;
+    const baseY = mapa.clientHeight - 30;
+
+    juegosTorre.forEach((juego, i) => {
+      // torre vertical, con leve variación horizontal para que se vea más orgánica
+      const x = baseX + (Math.random() * 24 - 12);
+      const y = baseY - i * (altoBloque + separacion);
+
+      juego.cx = x;
+      juego.cy = y;
+      juego.w = anchoBloque;
+      juego.h = altoBloque;
+
+      const intensidad = Math.min(juego.precio / 60, 1);
+
+      const bloque = document.createElement('div');
+      bloque.className = 'bloque-juego';
+      bloque.style.position = 'absolute';
+      bloque.style.left = `${x - anchoBloque / 2}px`;
+      bloque.style.top = `${y - altoBloque / 2}px`;
+      bloque.style.width = `${anchoBloque}px`;
+      bloque.style.height = `${altoBloque}px`;
+      bloque.style.lineHeight = `${altoBloque}px`;
+      bloque.style.padding = '0 10px';
+      bloque.style.boxSizing = 'border-box';
+      bloque.style.borderRadius = '8px';
+      bloque.style.border = '2px solid rgba(0,0,0,0.25)';
+      bloque.style.fontSize = '12px';
+      bloque.style.fontWeight = 'bold';
+      bloque.style.whiteSpace = 'nowrap';
+      bloque.style.overflow = 'hidden';
+      bloque.style.textOverflow = 'ellipsis';
+      bloque.style.color = '#111';
+      bloque.style.background = `linear-gradient(
+        90deg,
+        rgba(0,210,200,0.85),
+        rgba(245,197,24,${0.35 + intensidad * 0.5})
+      )`;
+      bloque.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+
+      bloque.innerHTML = `<span>${10 - i}. ${juego.nombre}</span>
+                          <span style="float:right;">$${juego.precio}</span>`;
+
+      mapa.appendChild(bloque);
+    });
+  }
+
+  function distanciaARectangulo(px, py, juego) {
+    const dx = Math.max(Math.abs(px - juego.cx) - juego.w / 2, 0);
+    const dy = Math.max(Math.abs(py - juego.cy) - juego.h / 2, 0);
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  function hacerClic(frecuencia, duracion = 0.08) {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(frecuencia, audioCtx.currentTime);
+
+    gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.4, audioCtx.currentTime + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duracion);
+
+    osc.start();
+    osc.stop(audioCtx.currentTime + duracion);
+  }
+
+  // Mientras más caro, más agudo suena
+  function sonarSegunPrecio(precio) {
+    const precioLimitado = Math.min(precio, 60);
+    const frecuencia = mapear(precioLimitado, 0, 60, 180, 950);
+    const duracion = mapear(precioLimitado, 0, 60, 0.05, 0.14);
+    hacerClic(frecuencia, duracion);
+  }
+
+  Protobject.Core.onReceived((datos) => {
+    const x = Number(datos.x) || 0;
+    const y = 100 - (Number(datos.y) || 0);
+
+    cursor.style.left = `${x}%`;
+    cursor.style.top = `${y}%`;
+
+    const px = mapa.clientWidth * x / 100;
+    const py = mapa.clientHeight * y / 100;
+
+    let distanciaMinima = Infinity;
+    let juegoCercano = null;
+
+    juegosTorre.forEach(juego => {
+      const dist = distanciaARectangulo(px, py, juego);
+      if (dist < distanciaMinima) {
+        distanciaMinima = dist;
+        juegoCercano = juego;
       }
     });
 
-    cargarDatosParaRadar();
-  </script>
-  <script src="config.js"></script>
+    const ahora = Date.now();
+
+    if (juegoCercano && distanciaMinima < 80) {
+      const intervalo = Math.max(90, distanciaMinima * 12);
+
+      if (ahora - ultimoClic > intervalo) {
+        sonarSegunPrecio(juegoCercano.precio);
+
+        Protobject.Core.send({
+          vibrar: true,
+          duracion: Math.max(20, Math.min(90, 90 - distanciaMinima))
+        }).to("sensor.html");
+
+        ultimoClic = ahora;
+      }
+
+      if (distanciaMinima < 8) {
+        info.innerHTML = `¡ENCONTRASTE: <strong>${juegoCercano.nombre}</strong>! 
+          Precio: $${juegoCercano.precio} | Rating: ${juegoCercano.rating}% 
+          <br><small>En esta versión, mientras más caro el juego, más agudo suena.</small>`;
+      } else {
+        info.innerHTML = `Cerca de: <strong>${juegoCercano.nombre}</strong> 
+          | Precio: $${juegoCercano.precio} 
+          | Rating: ${juegoCercano.rating}%`;
+      }
+    } else {
+      info.textContent = "Mueve el cursor para explorar la torre de juegos.";
+    }
+  });
+
+  window.addEventListener('resize', dibujarTorre);
+
+  cargarDatosTorre();
+</script>
+<script src="config.js"></script>
 
 </body>
 </html>

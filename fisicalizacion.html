@@ -71,7 +71,6 @@
     button:active { transform: translateY(0); }
 
     #btnNuevaTorre { background: var(--cyan); }
-    #btnActivarSonido { background: var(--dorado); }
 
     /* Selector de género */
     .filtro-genero {
@@ -224,7 +223,6 @@
 
     <div class="controles">
       <button id="btnNuevaTorre" type="button">🎲 Elegir otros 10 juegos</button>
-      <button id="btnActivarSonido" type="button">🔊 Activar sonido</button>
     </div>
 
     <div class="filtro-genero">
@@ -265,7 +263,6 @@
     const cursor           = document.getElementById("cursor");
     const info             = document.getElementById("info");
     const btnNuevaTorre    = document.getElementById("btnNuevaTorre");
-    const btnActivarSonido = document.getElementById("btnActivarSonido");
     const selectorGenero   = document.getElementById("selectorGenero");
     const contadorGenero   = document.getElementById("contadorGenero");
 
@@ -536,8 +533,6 @@
     async function activarSonido() {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (audioCtx.state === "suspended") await audioCtx.resume();
-      btnActivarSonido.textContent = "✓ Sonido activado";
-      info.textContent = "Sonido activado. Mueve el celular cerca de un bloque.";
     }
 
     function hacerClic(frecuencia, duracion, volumen = 0.28) {
@@ -638,6 +633,10 @@
     }
 
     // --- Eventos ---
+    // Activar AudioContext al primer gesto del usuario (requerido por navegadores)
+    document.addEventListener("click", activarSonido, { once: true });
+    document.addEventListener("touchstart", activarSonido, { once: true });
+
     Protobject.Core.onReceived((datos) => {
       if (datos.accion === "nuevosJuegos") { generarNuevaTorre(); return; }
       procesarMovimiento(datos);
@@ -647,7 +646,6 @@
     selectorGenero.addEventListener("change", generarNuevaTorre);
 
     btnNuevaTorre.addEventListener("click", generarNuevaTorre);
-    btnActivarSonido.addEventListener("click", activarSonido);
     window.addEventListener("resize", dibujarTorre);
 
     cargarDatosTorre();

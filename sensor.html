@@ -3,114 +3,196 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Sensor Radar</title>
+  <title>Control de la Torre</title>
   <style>
+    :root {
+      --fondo: #0b0e14;
+      --panel: #1a1c2c;
+      --texto: #e8edf5;
+      --cyan: #00d2c8;
+      --dorado: #f5c518;
+      --rojo: #e63946;
+    }
+
     * { box-sizing: border-box; }
+
     body {
-      font-family: sans-serif; padding: 20px; margin: 0;
-      background: #1a1c2c; text-align: center; color: #d6d6d6;
+      min-height: 100vh;
+      margin: 0;
+      padding: 24px 18px 30px;
+      color: var(--texto);
+      font-family: Arial, Helvetica, sans-serif;
+      text-align: center;
+      background:
+        radial-gradient(circle at top, rgba(0, 210, 200, 0.16), transparent 30%),
+        var(--fondo);
     }
-    #instr { font-size: 22px; margin-top: 20px; color: #d6d6d6; }
-    #valor { font-size: 36px; margin: 30px 0; color: #00d2c8; font-weight: bold; }
+
+    h1 { margin: 8px 0 10px; font-size: 1.8rem; }
+
+    #instr {
+      min-height: 52px;
+      margin: 0 auto 20px;
+      max-width: 500px;
+      color: #c4ccda;
+      font-size: 1.08rem;
+      line-height: 1.45;
+    }
+
+    #valor {
+      min-height: 58px;
+      display: grid;
+      place-items: center;
+      margin: 10px 0 22px;
+      color: var(--cyan);
+      font-size: clamp(1.35rem, 7vw, 2.15rem);
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+
     button {
-      display: block; width: 100%;
-      font-weight: bold; border: none; border-radius: 14px;
-      margin: 15px 0; padding: 25px; font-size: 22px; cursor: pointer;
+      display: block;
+      width: min(100%, 520px);
+      margin: 14px auto;
+      padding: 20px 16px;
+      border: 0;
+      border-radius: 15px;
+      color: #071012;
+      font-size: clamp(1rem, 4.8vw, 1.25rem);
+      font-weight: 900;
+      line-height: 1.2;
+      cursor: pointer;
       touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
-    #permiso { background: #e63946; color: white; }
-    #calibrar { background: #00d2c8; color: #1a1c2c; display: none; }
-    #calibrar:active { background: #00aaa6; }
+
+    button:active { transform: scale(0.985); }
+    #permiso { background: var(--rojo); color: white; }
+    #calibrar { display: none; background: var(--cyan); }
+    #nuevosJuegos { display: none; background: var(--dorado); }
+
+    .nota {
+      max-width: 520px;
+      margin: 25px auto 0;
+      color: #99a4b8;
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
   </style>
 </head>
 <body>
+  <h1>Control de la Torre</h1>
+  <div id="instr" aria-live="polite">Conecta este celular y úsalo como una linterna para mover la mira.</div>
 
-  <button id="permiso">PEDIR PERMISO DE ORIENTACIÓN</button>
-  <div id="instr">Pon el teléfono frente a ti como una linterna.</div>
-  <button id="calibrar">📍 CALIBRAR CENTRO</button>
-  <div id="valor">—</div>
+  <button id="permiso" type="button">PEDIR PERMISO DE ORIENTACIÓN</button>
+  <button id="calibrar" type="button">📍 CALIBRAR CENTRO</button>
+  <button id="nuevosJuegos" type="button">🎲 CAMBIAR LOS 10 JUEGOS</button>
+
+  <div id="valor" aria-live="polite">—</div>
+  <p class="nota">Tras calibrar, inclina el teléfono para recorrer la torre. El botón amarillo genera otra selección de 10 juegos en la pantalla principal.</p>
 
   <script src="https://app.protobject.com/framework/p.js"></script>
+  <script src="config.js"></script>
   <script>
-    const instr    = document.getElementById("instr");
-    const valorEl  = document.getElementById("valor");
-    const btnCal   = document.getElementById("calibrar");
-    const btnPerm  = document.getElementById("permiso");
+    const instr = document.getElementById("instr");
+    const valorEl = document.getElementById("valor");
+    const btnCalibrar = document.getElementById("calibrar");
+    const btnPermiso = document.getElementById("permiso");
+    const btnNuevosJuegos = document.getElementById("nuevosJuegos");
 
-    let origenBeta  = null;
+    let origenBeta = null;
     let origenGamma = null;
+    let sensorIniciado = false;
 
-    // Recibir orden de vibrar desde la pantalla
-    Protobject.Core.onReceived((msg) => {
-      if (msg.vibrar && navigator.vibrate) {
-        navigator.vibrate(msg.duracion || 30);
+    Protobject.Core.onReceived((mensaje) => {
+      if (mensaje.vibrar && navigator.vibrate) {
+        navigator.vibrate(mensaje.duracion || 30);
+      }
+
+      if (mensaje.torreActualizada) {
+        instr.textContent = "✅ Nueva torre lista. Inclina el teléfono para explorarla.";
+        if (navigator.vibrate) navigator.vibrate([45, 35, 45]);
       }
     });
 
-    function handler(event) {
-      if (event.beta === null || event.gamma === null) return;
-      if (origenBeta === null) return; // sin calibrar aún
-
-      let dy = event.beta  - origenBeta;
-      let dx = event.gamma - origenGamma;
-
-      // Limitar rango a ±45°
-      dx = Math.max(-45, Math.min(45, dx));
-      dy = Math.max(-45, Math.min(45, dy));
-
-      // Convertir a porcentaje 0-100
-      const posX = ((dx + 45) / 90) * 100;
-      const posY = ((dy + 45) / 90) * 100;
-
-      valorEl.textContent = `X: ${Math.round(posX)}% | Y: ${Math.round(posY)}%`;
-      Protobject.Core.send({ x: posX, y: posY }).to("fisicalizacion.html");
+    function limitar(valor, minimo, maximo) {
+      return Math.max(minimo, Math.min(maximo, valor));
     }
 
-    function iniciar() {
-      btnPerm.style.display = "none";
-      btnCal.style.display  = "block";
-      instr.textContent = "Pon el teléfono al centro y toca calibrar.";
-      window.addEventListener("deviceorientation", handler, true);
+    function enviarPosicion(evento) {
+      if (evento.beta === null || evento.gamma === null || origenBeta === null || origenGamma === null) {
+        return;
+      }
+
+      const desplazamientoY = limitar(evento.beta - origenBeta, -45, 45);
+      const desplazamientoX = limitar(evento.gamma - origenGamma, -45, 45);
+      const x = ((desplazamientoX + 45) / 90) * 100;
+      const y = ((desplazamientoY + 45) / 90) * 100;
+
+      valorEl.textContent = `X: ${Math.round(x)}% | Y: ${Math.round(y)}%`;
+      Protobject.Core.send({ x, y }).to("fisicalizacion.html");
     }
 
-    btnPerm.addEventListener("click", async () => {
+    function iniciarSensor() {
+      if (sensorIniciado) return;
+      sensorIniciado = true;
+
+      btnPermiso.style.display = "none";
+      btnCalibrar.style.display = "block";
+      btnNuevosJuegos.style.display = "block";
+      instr.textContent = "Pon el teléfono al centro y toca “Calibrar centro”.";
+      window.addEventListener("deviceorientation", enviarPosicion, true);
+    }
+
+    async function pedirPermiso() {
       try {
-        if (typeof DeviceOrientationEvent !== "undefined" &&
-            typeof DeviceOrientationEvent.requestPermission === "function") {
-          const r = await DeviceOrientationEvent.requestPermission();
-          if (r === "granted") iniciar();
-          else instr.textContent = "Permiso denegado. Recarga e intenta de nuevo.";
-        } else {
-          iniciar();
+        if (
+          typeof DeviceOrientationEvent !== "undefined" &&
+          typeof DeviceOrientationEvent.requestPermission === "function"
+        ) {
+          const permiso = await DeviceOrientationEvent.requestPermission();
+          if (permiso !== "granted") {
+            instr.textContent = "Permiso denegado. Recarga la página e inténtalo otra vez.";
+            return;
+          }
         }
-      } catch (err) {
-        instr.textContent = "Error: " + err.message;
-      }
-    });
 
-    function calibrar(e) {
-      if (e) { e.preventDefault(); e.stopPropagation(); }
-      // Capturar posición actual como centro
-      const captura = (ev) => {
-        origenBeta  = ev.beta;
-        origenGamma = ev.gamma;
-        instr.textContent = "✓ Calibrado. Inclina el celular para mover la mira.";
-        btnCal.textContent = "🔄 RECALIBRAR";
-        window.removeEventListener("deviceorientation", captura);
-      };
-      window.addEventListener("deviceorientation", captura);
+        iniciarSensor();
+      } catch (error) {
+        instr.textContent = `No se pudo activar el sensor: ${error.message}`;
+      }
     }
 
-    btnCal.addEventListener("touchstart", calibrar);
-    btnCal.addEventListener("click", calibrar);
+    function calibrar() {
+      const capturarCentro = (evento) => {
+        if (evento.beta === null || evento.gamma === null) return;
 
-    // Android no necesita permiso explícito
-    if (typeof DeviceOrientationEvent === "undefined" ||
-        typeof DeviceOrientationEvent.requestPermission !== "function") {
-      iniciar();
+        origenBeta = evento.beta;
+        origenGamma = evento.gamma;
+        instr.textContent = "✓ Calibrado. Inclina el celular para mover la mira.";
+        btnCalibrar.textContent = "🔄 RECALIBRAR";
+        window.removeEventListener("deviceorientation", capturarCentro, true);
+      };
+
+      window.addEventListener("deviceorientation", capturarCentro, true);
+    }
+
+    function pedirNuevaTorre() {
+      Protobject.Core.send({ accion: "nuevosJuegos" }).to("fisicalizacion.html");
+      instr.textContent = "Generando otros 10 juegos…";
+      if (navigator.vibrate) navigator.vibrate(45);
+    }
+
+    btnPermiso.addEventListener("click", pedirPermiso);
+    btnCalibrar.addEventListener("click", calibrar);
+    btnNuevosJuegos.addEventListener("click", pedirNuevaTorre);
+
+    if (
+      typeof DeviceOrientationEvent === "undefined" ||
+      typeof DeviceOrientationEvent.requestPermission !== "function"
+    ) {
+      iniciarSensor();
     }
   </script>
-
-  <script src="config.js"></script>
 </body>
 </html>

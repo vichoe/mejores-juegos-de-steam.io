@@ -2,235 +2,530 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <title>Fisicalización - Mejores Juegos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fisicalización | Torre de Juegos</title>
+  <style>
+    :root {
+      --fondo: #0b0e14;
+      --panel: rgba(26, 28, 44, 0.92);
+      --texto: #f4f6fb;
+      --suave: #bfc7d8;
+      --cyan: #00d2c8;
+      --dorado: #f5c518;
+      --borde: rgba(255, 255, 255, 0.14);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--texto);
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(0, 210, 200, 0.14), transparent 28%),
+        radial-gradient(circle at bottom left, rgba(245, 197, 24, 0.12), transparent 32%),
+        var(--fondo);
+    }
+
+    main {
+      width: min(100% - 32px, 980px);
+      margin: 0 auto;
+      padding: 34px 0 42px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      letter-spacing: 0.5px;
+    }
+
+    .subtitulo {
+      max-width: 760px;
+      margin: 12px 0 22px;
+      color: var(--suave);
+      line-height: 1.55;
+      font-size: 1.05rem;
+    }
+
+    .controles {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 17px;
+      color: #071012;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.18s ease, filter 0.18s ease;
+    }
+
+    button:hover { transform: translateY(-2px); filter: brightness(1.08); }
+    button:active { transform: translateY(0); }
+
+    #btnNuevaTorre { background: var(--cyan); }
+    #btnActivarSonido { background: var(--dorado); }
+
+    .leyenda {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 11px 16px;
+      margin: 0 0 16px;
+      color: var(--suave);
+      font-size: 0.92rem;
+    }
+
+    .leyenda span { display: inline-flex; align-items: center; gap: 7px; }
+    .punto { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+    .punto.bueno { background: #67e8c5; }
+    .punto.malo { background: #ff9a9e; }
+    .punto.medio { background: #f4df83; }
+
+    #mapa {
+      width: 100%;
+      height: min(68vh, 590px);
+      min-height: 500px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--borde);
+      border-radius: 20px;
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+        rgba(8, 12, 20, 0.84);
+      background-size: 30px 30px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.38);
+    }
+
+    #mapa::before {
+      content: "Explora la torre inclinando tu teléfono";
+      position: absolute;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255, 255, 255, 0.38);
+      font-size: 0.88rem;
+      white-space: nowrap;
+    }
+
+    .bloque-juego {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      position: absolute;
+      min-width: 0;
+      height: 42px;
+      padding: 0 12px;
+      border: 1px solid rgba(12, 16, 25, 0.42);
+      border-radius: 10px;
+      color: #111827;
+      box-shadow: 0 6px 13px rgba(0, 0, 0, 0.28);
+      font-size: clamp(0.72rem, 1.9vw, 0.88rem);
+      font-weight: 800;
+      user-select: none;
+    }
+
+    .nombre-juego {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .precio-juego {
+      flex: 0 0 auto;
+      padding-left: 8px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    #cursor {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      z-index: 10;
+      transform: translate(-50%, -50%);
+      color: #fff;
+      border: 3px solid #ff9f1c;
+      border-radius: 50%;
+      background: rgba(255, 159, 28, 0.16);
+      box-shadow: 0 0 0 7px rgba(255, 159, 28, 0.12);
+      pointer-events: none;
+      font-weight: 900;
+    }
+
+    #info {
+      min-height: 54px;
+      margin-top: 16px;
+      padding: 14px 16px;
+      border: 1px solid var(--borde);
+      border-radius: 13px;
+      background: var(--panel);
+      color: var(--suave);
+      line-height: 1.45;
+    }
+
+    #info strong { color: #fff; }
+
+    @media (max-width: 560px) {
+      main { width: min(100% - 20px, 980px); padding-top: 22px; }
+      #mapa { min-height: 500px; }
+      .controles button { width: 100%; }
+      #mapa::before { font-size: 0.74rem; }
+    }
+  </style>
 </head>
 <body>
+  <main>
+    <h1>Torre de Juegos</h1>
+    <p class="subtitulo">
+      Cada torre contiene 10 juegos aleatorios: al menos 2 muy bien valorados,
+      2 de baja valoración y otros juegos para comparar. Al acercarte a un juego,
+      su tono representa su precio: más caro, más agudo.
+    </p>
 
-  <h1>Torre de Juegos</h1>
-  <p>Conecta tu celular con el botón flotante para explorar 10 juegos aleatorios.</p>
+    <div class="controles">
+      <button id="btnNuevaTorre" type="button">🎲 Elegir otros 10 juegos</button>
+      <button id="btnActivarSonido" type="button">🔊 Activar sonido</button>
+    </div>
 
-  <div id="mapa" style="width:800px; height:500px; border:2px solid black; position:relative; overflow:hidden;">
-    <div id="cursor" style="width:30px; height:30px; border:3px solid orange; border-radius:50%; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); pointer-events:none;">+</div>
-  </div>
+    <div class="leyenda" aria-label="Leyenda de valoración">
+      <span><i class="punto bueno"></i> Buena valoración (85% o más)</span>
+      <span><i class="punto malo"></i> Baja valoración (60% o menos)</span>
+      <span><i class="punto medio"></i> Valoración intermedia</span>
+    </div>
 
-  <div id="info">Cargando datos reales...</div>
+    <div id="mapa" aria-label="Torre interactiva de diez juegos">
+      <div id="cursor">+</div>
+    </div>
+
+    <div id="info" aria-live="polite">Cargando juegos para la primera torre…</div>
+  </main>
 
   <script src="https://app.protobject.com/framework/p.js"></script>
+  <script src="config.js"></script>
   <script>
-    const mapa   = document.getElementById('mapa');
-    const cursor = document.getElementById('cursor');
-    const info   = document.getElementById('info');
+    const mapa = document.getElementById("mapa");
+    const cursor = document.getElementById("cursor");
+    const info = document.getElementById("info");
+    const btnNuevaTorre = document.getElementById("btnNuevaTorre");
+    const btnActivarSonido = document.getElementById("btnActivarSonido");
 
+    let todosLosJuegos = [];
     let juegosTorre = [];
     let audioCtx = null;
     let ultimoClic = 0;
 
     function mezclarArreglo(arreglo) {
-      for (let i = arreglo.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arreglo[i], arreglo[j]] = [arreglo[j], arreglo[i]];
+      const copia = [...arreglo];
+      for (let indice = copia.length - 1; indice > 0; indice--) {
+        const aleatorio = Math.floor(Math.random() * (indice + 1));
+        [copia[indice], copia[aleatorio]] = [copia[aleatorio], copia[indice]];
       }
-      return arreglo;
+      return copia;
     }
 
-    function mapear(valor, inMin, inMax, outMin, outMax) {
-      if (inMax === inMin) return outMin;
-      const proporcion = (valor - inMin) / (inMax - inMin);
-      return outMin + proporcion * (outMax - outMin);
+    function formatearPrecio(precio) {
+      return Number(precio).toLocaleString("en-US", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function mapear(valor, entradaMin, entradaMax, salidaMin, salidaMax) {
+      if (entradaMax === entradaMin) return salidaMin;
+      const proporcion = (valor - entradaMin) / (entradaMax - entradaMin);
+      return salidaMin + proporcion * (salidaMax - salidaMin);
+    }
+
+    function tomarAleatorios(arreglo, cantidad, usados) {
+      const disponibles = arreglo.filter(juego => !usados.has(juego));
+      const seleccion = mezclarArreglo(disponibles).slice(0, cantidad);
+      seleccion.forEach(juego => usados.add(juego));
+      return seleccion;
     }
 
     function limpiarTorre() {
-      mapa.querySelectorAll('.bloque-juego').forEach(el => el.remove());
+      mapa.querySelectorAll(".bloque-juego").forEach(bloque => bloque.remove());
     }
 
     async function cargarDatosTorre() {
       try {
-        const respuesta = await fetch('datos/datos_radar.json');
-        if (!respuesta.ok) throw new Error("No se pudo leer el archivo JSON.");
-
-        const datos = await respuesta.json();
-
-      // Tomamos juegos con nombre, precio y rating válidos
-        const candidatos = datos.filter(j =>
-          typeof j.Name === 'string' &&
-          j.Name.trim() !== '' &&
-          !isNaN(Number(j.Price)) &&
-          !isNaN(Number(j.rating))
-        );
-
-        if (candidatos.length < 10) {
-          throw new Error("No hay suficientes juegos válidos para construir la torre.");
+        const respuesta = await fetch("datos/datos_radar.json");
+        if (!respuesta.ok) {
+          throw new Error("No se pudo leer datos/datos_radar.json.");
         }
 
-      // Elegimos 10 juegos aleatorios
-      const seleccion = mezclarArreglo([...candidatos]).slice(0, 10);
+        const datos = await respuesta.json();
+        const nombresUsados = new Set();
 
-      juegosTorre = seleccion.map((j, index) => ({
-        nombre: j.Name,
-        precio: Number(j.Price) || 0,
-        rating: Number(j.rating) || 0,
-        owners: Number(j["Estimated owners"]) || 0,
-        nivel: index + 1
+        todosLosJuegos = datos.filter(juego => {
+          const nombre = typeof juego.Name === "string" ? juego.Name.trim() : "";
+          const precio = Number(juego.Price);
+          const rating = Number(juego.rating);
+
+          if (!nombre || nombresUsados.has(nombre) || !Number.isFinite(precio) || !Number.isFinite(rating)) {
+            return false;
+          }
+
+          nombresUsados.add(nombre);
+          return true;
+        });
+
+        if (todosLosJuegos.length < 10) {
+          throw new Error("No hay suficientes juegos válidos para crear la torre.");
+        }
+
+        generarNuevaTorre();
+      } catch (error) {
+        info.textContent = `❌ Error al cargar los datos: ${error.message}`;
+      }
+    }
+
+    function generarNuevaTorre() {
+      const buenos = todosLosJuegos.filter(juego => Number(juego.rating) >= 85);
+      const malos = todosLosJuegos.filter(juego =>
+        Number(juego.rating) > 0 && Number(juego.rating) <= 60
+      );
+      const intermedios = todosLosJuegos.filter(juego =>
+        Number(juego.rating) > 60 && Number(juego.rating) < 85
+      );
+
+      if (buenos.length < 2 || malos.length < 2) {
+        info.textContent = "❌ La base no tiene suficientes juegos buenos y malos para mantener la diversidad.";
+        return;
+      }
+
+      const usados = new Set();
+      const seleccionBuenos = tomarAleatorios(buenos, 2, usados).map(juego => ({
+        ...juego,
+        categoria: "bueno"
+      }));
+      const seleccionMalos = tomarAleatorios(malos, 2, usados).map(juego => ({
+        ...juego,
+        categoria: "malo"
+      }));
+
+      let seleccionIntermedios = tomarAleatorios(intermedios, 6, usados).map(juego => ({
+        ...juego,
+        categoria: "intermedio"
+      }));
+
+      if (seleccionIntermedios.length < 6) {
+        const faltantes = 6 - seleccionIntermedios.length;
+        const respaldo = tomarAleatorios(todosLosJuegos, faltantes, usados).map(juego => ({
+          ...juego,
+          categoria: "intermedio"
+        }));
+        seleccionIntermedios = [...seleccionIntermedios, ...respaldo];
+      }
+
+      const seleccionFinal = mezclarArreglo([
+        ...seleccionBuenos,
+        ...seleccionMalos,
+        ...seleccionIntermedios
+      ]).slice(0, 10);
+
+      juegosTorre = seleccionFinal.map((juego, indice) => ({
+        nombre: juego.Name,
+        precio: Number(juego.Price) || 0,
+        rating: Number(juego.rating) || 0,
+        owners: Number(juego["Estimated owners"]) || 0,
+        categoria: juego.categoria,
+        nivel: indice + 1,
+        desplazamiento: Math.round(Math.random() * 36 - 18)
       }));
 
       dibujarTorre();
-      info.textContent = "¡10 juegos cargados en la torre!";
-    } catch (error) {
-      info.textContent = "❌ Error al cargar datos: " + error.message;
-    }
-  }
+      info.innerHTML = "Nueva torre lista: <strong>2 juegos muy bien valorados</strong>, " +
+        "<strong>2 de baja valoración</strong> y 6 juegos intermedios o aleatorios.";
 
-  function dibujarTorre() {
-    limpiarTorre();
-
-    const anchoBloque = 260;
-    const altoBloque = 28;
-    const separacion = 12;
-
-    const baseX = mapa.clientWidth / 2;
-    const baseY = mapa.clientHeight - 30;
-
-    juegosTorre.forEach((juego, i) => {
-      // torre vertical, con leve variación horizontal para que se vea más orgánica
-      const x = baseX + (Math.random() * 24 - 12);
-      const y = baseY - i * (altoBloque + separacion);
-
-      juego.cx = x;
-      juego.cy = y;
-      juego.w = anchoBloque;
-      juego.h = altoBloque;
-
-      const intensidad = Math.min(juego.precio / 60, 1);
-
-      const bloque = document.createElement('div');
-      bloque.className = 'bloque-juego';
-      bloque.style.position = 'absolute';
-      bloque.style.left = `${x - anchoBloque / 2}px`;
-      bloque.style.top = `${y - altoBloque / 2}px`;
-      bloque.style.width = `${anchoBloque}px`;
-      bloque.style.height = `${altoBloque}px`;
-      bloque.style.lineHeight = `${altoBloque}px`;
-      bloque.style.padding = '0 10px';
-      bloque.style.boxSizing = 'border-box';
-      bloque.style.borderRadius = '8px';
-      bloque.style.border = '2px solid rgba(0,0,0,0.25)';
-      bloque.style.fontSize = '12px';
-      bloque.style.fontWeight = 'bold';
-      bloque.style.whiteSpace = 'nowrap';
-      bloque.style.overflow = 'hidden';
-      bloque.style.textOverflow = 'ellipsis';
-      bloque.style.color = '#111';
-      bloque.style.background = `linear-gradient(
-        90deg,
-        rgba(0,210,200,0.85),
-        rgba(245,197,24,${0.35 + intensidad * 0.5})
-      )`;
-      bloque.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
-
-      bloque.innerHTML = `<span>${10 - i}. ${juego.nombre}</span>
-                          <span style="float:right;">$${juego.precio}</span>`;
-
-      mapa.appendChild(bloque);
-    });
-  }
-
-  function distanciaARectangulo(px, py, juego) {
-    const dx = Math.max(Math.abs(px - juego.cx) - juego.w / 2, 0);
-    const dy = Math.max(Math.abs(py - juego.cy) - juego.h / 2, 0);
-    return Math.sqrt(dx * dx + dy * dy);
-  }
-
-  function hacerClic(frecuencia, duracion = 0.08) {
-    if (!audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      Protobject.Core.send({ torreActualizada: true }).to("sensor.html");
     }
 
-    if (audioCtx.state === 'suspended') {
-      audioCtx.resume();
-    }
-
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(frecuencia, audioCtx.currentTime);
-
-    gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.4, audioCtx.currentTime + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duracion);
-
-    osc.start();
-    osc.stop(audioCtx.currentTime + duracion);
-  }
-
-  // Mientras más caro, más agudo suena
-  function sonarSegunPrecio(precio) {
-    const precioLimitado = Math.min(precio, 60);
-    const frecuencia = mapear(precioLimitado, 0, 60, 180, 950);
-    const duracion = mapear(precioLimitado, 0, 60, 0.05, 0.14);
-    hacerClic(frecuencia, duracion);
-  }
-
-  Protobject.Core.onReceived((datos) => {
-    const x = Number(datos.x) || 0;
-    const y = 100 - (Number(datos.y) || 0);
-
-    cursor.style.left = `${x}%`;
-    cursor.style.top = `${y}%`;
-
-    const px = mapa.clientWidth * x / 100;
-    const py = mapa.clientHeight * y / 100;
-
-    let distanciaMinima = Infinity;
-    let juegoCercano = null;
-
-    juegosTorre.forEach(juego => {
-      const dist = distanciaARectangulo(px, py, juego);
-      if (dist < distanciaMinima) {
-        distanciaMinima = dist;
-        juegoCercano = juego;
+    function aparienciaCategoria(categoria) {
+      if (categoria === "bueno") {
+        return {
+          fondo: "linear-gradient(90deg, #49d5b4, #9af3d5)",
+          etiqueta: "Buena valoración"
+        };
       }
-    });
 
-    const ahora = Date.now();
+      if (categoria === "malo") {
+        return {
+          fondo: "linear-gradient(90deg, #ff7f8c, #ffc1b9)",
+          etiqueta: "Baja valoración"
+        };
+      }
 
-    if (juegoCercano && distanciaMinima < 80) {
-      const intervalo = Math.max(90, distanciaMinima * 12);
+      return {
+        fondo: "linear-gradient(90deg, #e7c85b, #fff1a5)",
+        etiqueta: "Valoración intermedia"
+      };
+    }
+
+    function dibujarTorre() {
+      limpiarTorre();
+
+      const anchoBloque = Math.min(440, mapa.clientWidth - 48);
+      const altoBloque = 42;
+      const separacion = 10;
+      const baseX = mapa.clientWidth / 2;
+      const baseY = mapa.clientHeight - 38;
+
+      juegosTorre.forEach((juego, indice) => {
+        const x = baseX + juego.desplazamiento;
+        const y = baseY - indice * (altoBloque + separacion);
+
+        juego.cx = x;
+        juego.cy = y;
+        juego.w = anchoBloque;
+        juego.h = altoBloque;
+
+        const apariencia = aparienciaCategoria(juego.categoria);
+        const bloque = document.createElement("div");
+        const nombre = document.createElement("span");
+        const precio = document.createElement("span");
+
+        bloque.className = "bloque-juego";
+        bloque.style.left = `${x - anchoBloque / 2}px`;
+        bloque.style.top = `${y - altoBloque / 2}px`;
+        bloque.style.width = `${anchoBloque}px`;
+        bloque.style.background = apariencia.fondo;
+        bloque.title = `${juego.nombre} · ${apariencia.etiqueta} · Rating ${juego.rating}% · Precio $${formatearPrecio(juego.precio)}`;
+
+        nombre.className = "nombre-juego";
+        nombre.textContent = `${10 - indice}. ${juego.nombre}`;
+
+        precio.className = "precio-juego";
+        precio.textContent = `$${formatearPrecio(juego.precio)}`;
+
+        bloque.append(nombre, precio);
+        mapa.appendChild(bloque);
+      });
+    }
+
+    function distanciaARectangulo(px, py, juego) {
+      const dx = Math.max(Math.abs(px - juego.cx) - juego.w / 2, 0);
+      const dy = Math.max(Math.abs(py - juego.cy) - juego.h / 2, 0);
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    async function activarSonido() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+
+      if (audioCtx.state === "suspended") {
+        await audioCtx.resume();
+      }
+
+      btnActivarSonido.textContent = "✓ Sonido activado";
+      info.textContent = "Sonido activado. Ahora mueve el celular cerca de un bloque.";
+    }
+
+    function hacerClic(frecuencia, duracion) {
+      if (!audioCtx || audioCtx.state !== "running") return;
+
+      const oscilador = audioCtx.createOscillator();
+      const ganancia = audioCtx.createGain();
+
+      oscilador.connect(ganancia);
+      ganancia.connect(audioCtx.destination);
+      oscilador.type = "triangle";
+      oscilador.frequency.setValueAtTime(frecuencia, audioCtx.currentTime);
+
+      ganancia.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      ganancia.gain.exponentialRampToValueAtTime(0.28, audioCtx.currentTime + 0.01);
+      ganancia.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duracion);
+
+      oscilador.start();
+      oscilador.stop(audioCtx.currentTime + duracion);
+    }
+
+    function sonarSegunPrecio(precio) {
+      const precioLimitado = Math.max(0, Math.min(precio, 60));
+      const frecuencia = mapear(precioLimitado, 0, 60, 180, 950);
+      const duracion = mapear(precioLimitado, 0, 60, 0.05, 0.14);
+      hacerClic(frecuencia, duracion);
+    }
+
+    function procesarMovimiento(datos) {
+      const x = Number(datos.x);
+      const yOriginal = Number(datos.y);
+
+      if (!Number.isFinite(x) || !Number.isFinite(yOriginal)) return;
+
+      const y = 100 - yOriginal;
+      cursor.style.left = `${x}%`;
+      cursor.style.top = `${y}%`;
+
+      const px = mapa.clientWidth * x / 100;
+      const py = mapa.clientHeight * y / 100;
+
+      let distanciaMinima = Infinity;
+      let juegoCercano = null;
+
+      juegosTorre.forEach(juego => {
+        const distancia = distanciaARectangulo(px, py, juego);
+        if (distancia < distanciaMinima) {
+          distanciaMinima = distancia;
+          juegoCercano = juego;
+        }
+      });
+
+      if (!juegoCercano || distanciaMinima >= 85) {
+        info.textContent = "Mueve el cursor hacia un bloque de la torre.";
+        return;
+      }
+
+      const ahora = Date.now();
+      const intervalo = Math.max(95, distanciaMinima * 12);
 
       if (ahora - ultimoClic > intervalo) {
         sonarSegunPrecio(juegoCercano.precio);
-
         Protobject.Core.send({
           vibrar: true,
-          duracion: Math.max(20, Math.min(90, 90 - distanciaMinima))
+          duracion: Math.max(25, Math.min(100, 100 - distanciaMinima))
         }).to("sensor.html");
-
         ultimoClic = ahora;
       }
 
-      if (distanciaMinima < 8) {
-        info.innerHTML = `¡ENCONTRASTE: <strong>${juegoCercano.nombre}</strong>! 
-          Precio: $${juegoCercano.precio} | Rating: ${juegoCercano.rating}% 
-          <br><small>En esta versión, mientras más caro el juego, más agudo suena.</small>`;
+      if (distanciaMinima < 9) {
+        info.innerHTML = `¡Encontraste <strong>${juegoCercano.nombre}</strong>! ` +
+          `Precio: <strong>$${formatearPrecio(juegoCercano.precio)}</strong> · ` +
+          `Rating: <strong>${juegoCercano.rating}%</strong>. ` +
+          "El tono representa el precio, no el rating.";
       } else {
-        info.innerHTML = `Cerca de: <strong>${juegoCercano.nombre}</strong> 
-          | Precio: $${juegoCercano.precio} 
-          | Rating: ${juegoCercano.rating}%`;
+        info.innerHTML = `Cerca de <strong>${juegoCercano.nombre}</strong> · ` +
+          `Precio: $${formatearPrecio(juegoCercano.precio)} · Rating: ${juegoCercano.rating}%.`;
       }
-    } else {
-      info.textContent = "Mueve el cursor para explorar la torre de juegos.";
     }
-  });
 
-  window.addEventListener('resize', dibujarTorre);
+    Protobject.Core.onReceived((datos) => {
+      if (datos.accion === "nuevosJuegos") {
+        generarNuevaTorre();
+        return;
+      }
 
-  cargarDatosTorre();
-</script>
-<script src="config.js"></script>
+      procesarMovimiento(datos);
+    });
 
+    btnNuevaTorre.addEventListener("click", generarNuevaTorre);
+    btnActivarSonido.addEventListener("click", activarSonido);
+    window.addEventListener("resize", dibujarTorre);
+
+    cargarDatosTorre();
+  </script>
 </body>
 </html>

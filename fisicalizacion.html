@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fisicalización | Torre de Juegos</title>
   <style>
+
+
     :root {
       --fondo: #0b0e14;
       --panel: rgba(26, 28, 44, 0.92);
@@ -183,6 +185,7 @@
       .controles button { width: 100%; }
       #mapa::before { font-size: 0.74rem; }
     }
+    
   </style>
 </head>
 <body>
@@ -191,7 +194,7 @@
     <p class="subtitulo">
       Cada torre contiene 10 juegos aleatorios: al menos 2 muy bien valorados,
       2 de baja valoración y otros juegos para comparar. Al acercarte a un juego,
-      su tono representa su precio: más caro, más agudo.
+      su tono representa su precio: más caro, más agudo. 
     </p>
 
     <div class="controles">
@@ -559,7 +562,10 @@
     btnActivarSonido.addEventListener("click", activarSonido);
     window.addEventListener("resize", dibujarTorre);
 
+
     cargarDatosTorre();
+
+    
   </script>
 </body>
 </html>

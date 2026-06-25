@@ -296,7 +296,6 @@
       return salidaMin + ((valor - entradaMin) / (entradaMax - entradaMin)) * (salidaMax - salidaMin);
     }
 
-    // Selección ponderada: más owners y más playtime = más probabilidad de aparecer
     function tomarPonderados(arreglo, cantidad, usados) {
       const disponibles = arreglo.filter(j => !usados.has(j));
       if (disponibles.length <= cantidad) {
@@ -347,14 +346,12 @@
       mapa.querySelectorAll(".bloque-juego").forEach(b => b.remove());
     }
 
-    // Verifica si un juego tiene el tag seleccionado
     function tieneGenero(juego, genero) {
       if (!genero) return true;
       const tags = (juego.Tags || "").split(",").map(t => t.trim());
       return tags.includes(genero);
     }
 
-    // --- Carga de datos ---
     async function cargarDatosTorre() {
       try {
         const respuesta = await fetch("datos/datos_radar.json");
@@ -379,16 +376,13 @@
       }
     }
 
-    // --- Generar torre ---
     function generarNuevaTorre() {
       const generoSeleccionado = selectorGenero.value;
 
-      // Filtrar por género si hay uno seleccionado
       const base = generoSeleccionado
         ? todosLosJuegos.filter(j => tieneGenero(j, generoSeleccionado))
         : todosLosJuegos;
 
-      // Actualizar contador
       contadorGenero.textContent = generoSeleccionado
         ? `${base.length} juegos disponibles`
         : "";
@@ -404,7 +398,6 @@
 
       const usados = new Set();
 
-      // Si no hay suficientes buenos/malos, tomar aleatorios del total filtrado
       const seleccionBuenos = buenos.length >= 2
         ? tomarPonderados(buenos, 2, usados).map(j => ({ ...j, categoria: "bueno" }))
         : tomarPonderados(base, 2, usados).map(j => ({ ...j, categoria: "bueno" }));
@@ -427,27 +420,22 @@
         ...seleccionIntermedios
       ]).slice(0, 10);
 
-      // Garantizar: al menos 1 juego con owners > 2.999.999 y al menos 3 con owners > 999.999
       const UMBRAL_MUY_POPULAR = 2999999;
       const UMBRAL_POPULAR     = 999999;
 
       function garantizarPopulares(seleccion, pool, usadosSet) {
         let resultado = [...seleccion];
 
-        // Cuántos cumplen cada umbral
         const muyPop = resultado.filter(j => Number(j["Estimated owners"]) > UMBRAL_MUY_POPULAR);
         const pop    = resultado.filter(j => Number(j["Estimated owners"]) > UMBRAL_POPULAR);
 
-        // Extra pool disponible ordenado por owners desc
         const extraPool = pool
           .filter(j => !usadosSet.has(j))
           .sort((a, b) => Number(b["Estimated owners"]) - Number(a["Estimated owners"]));
 
-        // Función para reemplazar el juego con menos owners por uno del extraPool
         function reemplazarConUmbral(umbral) {
           const candidato = extraPool.find(j => Number(j["Estimated owners"]) > umbral);
           if (!candidato) return false;
-          // Quitar el de menor owners que NO cumpla el umbral
           const idxReemplazar = resultado
             .map((j, i) => ({ i, owners: Number(j["Estimated owners"]) }))
             .filter(x => x.owners <= umbral)
@@ -459,10 +447,8 @@
           return true;
         }
 
-        // Garantizar 1 con owners > 2.999.999
         if (muyPop.length < 1) reemplazarConUmbral(UMBRAL_MUY_POPULAR);
 
-        // Garantizar 3 con owners > 999.999 (incluye los muy populares)
         const popActuales = resultado.filter(j => Number(j["Estimated owners"]) > UMBRAL_POPULAR);
         let faltanPop = 3 - popActuales.length;
         while (faltanPop > 0) {
@@ -486,7 +472,6 @@
         nivel:     indice + 1
       }));
 
-      // Ordenar de menor a mayor precio (más caro abajo, más barato arriba)
       juegosTorre.sort((a, b) => a.precio - b.precio);
 
       dibujarTorre();

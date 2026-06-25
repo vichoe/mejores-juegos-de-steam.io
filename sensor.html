@@ -106,9 +106,12 @@
 
     Protobject.Core.onReceived((mensaje) => {
       if (mensaje.vibrar && navigator.vibrate) {
-        navigator.vibrate(mensaje.duracion || 30);
-      }
+      const patron = Array.isArray(mensaje.patron)
+        ? mensaje.patron
+        : (mensaje.duracion || 30);
 
+      navigator.vibrate(patron);
+    }
       if (mensaje.torreActualizada) {
         instr.textContent = "✅ Nueva torre lista. Inclina el teléfono para explorarla.";
         if (navigator.vibrate) navigator.vibrate([45, 35, 45]);

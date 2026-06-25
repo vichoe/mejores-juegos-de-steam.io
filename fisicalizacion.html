@@ -459,6 +459,31 @@
       const duracion = mapear(precioLimitado, 0, 60, 0.05, 0.14);
       hacerClic(frecuencia, duracion);
     }
+    function patronVibracionSegunPrecio(precio) {
+      const precioLimitado = Math.max(0, Math.min(Number(precio) || 0, 60));
+
+  // Juegos gratis o baratos: 1 vibración corta
+      if (precioLimitado <= 10) {
+        return [55];
+      }
+
+  // Juegos de precio medio-bajo: 2 vibraciones cortas
+      if (precioLimitado <= 25) {
+        return [65, 75, 65];
+      }
+
+  // Juegos de precio medio-alto: 3 vibraciones
+      if (precioLimitado <= 45) {
+        return [90, 55, 90, 55, 90];
+      }
+
+  // Juegos caros: patrón largo y notorio
+      return [130, 50, 130, 50, 130, 50, 250];
+    }
+
+  function duracionTotalPatron(patron) {
+    return patron.reduce((total, tramo) => total + tramo, 0);
+}
 
     function procesarMovimiento(datos) {
       const x = Number(datos.x);
@@ -489,17 +514,26 @@
         return;
       }
 
-      const ahora = Date.now();
-      const intervalo = Math.max(95, distanciaMinima * 12);
+  const ahora = Date.now();
 
-      if (ahora - ultimoClic > intervalo) {
-        sonarSegunPrecio(juegoCercano.precio);
-        Protobject.Core.send({
-          vibrar: true,
-          duracion: Math.max(25, Math.min(100, 100 - distanciaMinima))
-        }).to("sensor.html");
-        ultimoClic = ahora;
-      }
+  const patron = patronVibracionSegunPrecio(juegoCercano.precio);
+
+// Evita que una vibración nueva corte la anterior antes de terminar.
+  const intervalo = Math.max(
+    750,
+    duracionTotalPatron(patron) + 180
+  );
+
+  if (ahora - ultimoClic > intervalo) {
+    sonarSegunPrecio(juegoCercano.precio);
+
+    Protobject.Core.send({
+      vibrar: true,
+      patron: patron
+    }).to("sensor.html");
+
+    ultimoClic = ahora;
+  }
 
       if (distanciaMinima < 9) {
         info.innerHTML = `¡Encontraste <strong>${juegoCercano.nombre}</strong>! ` +

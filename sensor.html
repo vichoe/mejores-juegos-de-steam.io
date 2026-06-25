@@ -129,7 +129,7 @@
 
       const desplazamientoY = limitar(evento.beta - origenBeta, -45, 45);
       const desplazamientoX = limitar(evento.gamma - origenGamma, -45, 45);
-      const x = ((desplazamientoX + 45) / 90) * 100;
+      const x = 50 // ((desplazamientoX + 45) / 90) * 100;
       const y = ((desplazamientoY + 45) / 90) * 100;
 
       valorEl.textContent = `X: ${Math.round(x)}% | Y: ${Math.round(y)}%`;

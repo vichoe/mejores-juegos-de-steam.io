@@ -52,7 +52,8 @@
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
-      margin-bottom: 18px;
+      margin-bottom: 12px;
+      align-items: center;
     }
 
     button {
@@ -71,6 +72,47 @@
 
     #btnNuevaTorre { background: var(--cyan); }
     #btnActivarSonido { background: var(--dorado); }
+
+    .filtro-genero {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      border: 1px solid var(--borde);
+      border-radius: 13px;
+      background: var(--panel);
+    }
+
+    .filtro-genero label {
+      color: var(--suave);
+      font-size: 0.95rem;
+      white-space: nowrap;
+    }
+
+    .filtro-genero select {
+      background: rgba(0,0,0,0.4);
+      color: var(--texto);
+      border: 1px solid var(--cyan);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      outline: none;
+      flex: 1;
+      min-width: 180px;
+    }
+
+    .filtro-genero select:focus {
+      border-color: var(--dorado);
+    }
+
+    #contadorGenero {
+      color: var(--cyan);
+      font-size: 0.88rem;
+      white-space: nowrap;
+    }
 
     #mapa {
       width: 100%;
@@ -115,7 +157,6 @@
       font-size: clamp(0.72rem, 1.9vw, 0.88rem);
       font-weight: 800;
       user-select: none;
-      /* Color único para todos */
       background: linear-gradient(90deg, #00d2c8, #67e8d8);
     }
 
@@ -177,12 +218,36 @@
     <h1>Torre de Juegos</h1>
     <p class="subtitulo">
       Cada torre contiene 10 juegos aleatorios. Al acercarte a un juego,
-      su tono representa su precio: más caro, más agudo.
+      más rating = sonido más agudo y vibración más intensa.
     </p>
 
     <div class="controles">
       <button id="btnNuevaTorre" type="button">🎲 Elegir otros 10 juegos</button>
       <button id="btnActivarSonido" type="button">🔊 Activar sonido</button>
+    </div>
+
+    <div class="filtro-genero">
+      <label for="selectorGenero">Filtrar por tag de steam:</label>
+      <select id="selectorGenero">
+        <option value="">Todos los tags</option>
+        <option value="Action">Action</option>
+        <option value="Adventure">Adventure</option>
+        <option value="Casual">Casual</option>
+        <option value="Early Access">Early Access</option>
+        <option value="Free To Play">Free To Play</option>
+        <option value="Gore">Gore</option>
+        <option value="Indie">Indie</option>
+        <option value="Massively Multiplayer">Massively Multiplayer</option>
+        <option value="Nudity">Nudity</option>
+        <option value="RPG">RPG</option>
+        <option value="Racing">Racing</option>
+        <option value="Sexual Content">Sexual Content</option>
+        <option value="Simulation">Simulation</option>
+        <option value="Sports">Sports</option>
+        <option value="Strategy">Strategy</option>
+        <option value="Violent">Violent</option>
+      </select>
+      <span id="contadorGenero"></span>
     </div>
 
     <div id="mapa" aria-label="Torre interactiva de diez juegos">
@@ -195,17 +260,20 @@
   <script src="https://app.protobject.com/framework/p.js"></script>
   <script src="config.js"></script>
   <script>
-    const mapa = document.getElementById("mapa");
-    const cursor = document.getElementById("cursor");
-    const info = document.getElementById("info");
-    const btnNuevaTorre = document.getElementById("btnNuevaTorre");
+    const mapa             = document.getElementById("mapa");
+    const cursor           = document.getElementById("cursor");
+    const info             = document.getElementById("info");
+    const btnNuevaTorre    = document.getElementById("btnNuevaTorre");
     const btnActivarSonido = document.getElementById("btnActivarSonido");
+    const selectorGenero   = document.getElementById("selectorGenero");
+    const contadorGenero   = document.getElementById("contadorGenero");
 
     let todosLosJuegos = [];
-    let juegosTorre = [];
-    let audioCtx = null;
-    let ultimoClic = 0;
+    let juegosTorre    = [];
+    let audioCtx       = null;
+    let ultimoClic     = 0;
 
+    // --- Utilidades ---
     function mezclarArreglo(arreglo) {
       const copia = [...arreglo];
       for (let i = copia.length - 1; i > 0; i--) {
@@ -227,9 +295,49 @@
       return salidaMin + ((valor - entradaMin) / (entradaMax - entradaMin)) * (salidaMax - salidaMin);
     }
 
+    // Selección ponderada: más owners y más playtime = más probabilidad de aparecer
+    function tomarPonderados(arreglo, cantidad, usados) {
+      const disponibles = arreglo.filter(j => !usados.has(j));
+      if (disponibles.length <= cantidad) {
+        disponibles.forEach(j => usados.add(j));
+        return disponibles;
+      }
+
+      const maxOwners   = Math.max(...disponibles.map(j => Number(j["Estimated owners"]) || 0)) || 1;
+      const maxPlaytime = Math.max(...disponibles.map(j => Number(j["Average playtime forever"]) || 0)) || 1;
+
+      // Peso = 70% owners + 30% playtime, normalizado
+      const pesos = disponibles.map(j => {
+        const wOwners   = (Number(j["Estimated owners"]) || 0) / maxOwners;
+        const wPlaytime = (Number(j["Average playtime forever"]) || 0) / maxPlaytime;
+        return 0.7 * wOwners + 0.3 * wPlaytime + 0.05; // +0.05 para que nadie tenga peso 0
+      });
+
+      const seleccion = [];
+      const pesosCopia = [...pesos];
+      const dispCopia  = [...disponibles];
+
+      for (let i = 0; i < cantidad && dispCopia.length > 0; i++) {
+        const total = pesosCopia.reduce((s, p) => s + p, 0);
+        let rand = Math.random() * total;
+        let idx  = 0;
+        for (idx = 0; idx < pesosCopia.length; idx++) {
+          rand -= pesosCopia[idx];
+          if (rand <= 0) break;
+        }
+        idx = Math.min(idx, dispCopia.length - 1);
+        seleccion.push(dispCopia[idx]);
+        usados.add(dispCopia[idx]);
+        dispCopia.splice(idx, 1);
+        pesosCopia.splice(idx, 1);
+      }
+
+      return seleccion;
+    }
+
     function tomarAleatorios(arreglo, cantidad, usados) {
       const disponibles = arreglo.filter(j => !usados.has(j));
-      const seleccion = mezclarArreglo(disponibles).slice(0, cantidad);
+      const seleccion   = mezclarArreglo(disponibles).slice(0, cantidad);
       seleccion.forEach(j => usados.add(j));
       return seleccion;
     }
@@ -238,12 +346,20 @@
       mapa.querySelectorAll(".bloque-juego").forEach(b => b.remove());
     }
 
+    // Verifica si un juego tiene el tag seleccionado
+    function tieneGenero(juego, genero) {
+      if (!genero) return true;
+      const tags = (juego.Tags || "").split(",").map(t => t.trim());
+      return tags.includes(genero);
+    }
+
+    // --- Carga de datos ---
     async function cargarDatosTorre() {
       try {
         const respuesta = await fetch("datos/datos_radar.json");
         if (!respuesta.ok) throw new Error("No se pudo leer datos/datos_radar.json.");
 
-        const datos = await respuesta.json();
+        const datos       = await respuesta.json();
         const nombresUsados = new Set();
 
         todosLosJuegos = datos.filter(juego => {
@@ -262,58 +378,136 @@
       }
     }
 
+    // --- Generar torre ---
     function generarNuevaTorre() {
-      const buenos      = todosLosJuegos.filter(j => Number(j.rating) >= 85);
-      const malos       = todosLosJuegos.filter(j => Number(j.rating) > 0 && Number(j.rating) <= 60);
-      const intermedios = todosLosJuegos.filter(j => Number(j.rating) > 60 && Number(j.rating) < 85);
+      const generoSeleccionado = selectorGenero.value;
 
-      if (buenos.length < 2 || malos.length < 2) {
-        info.textContent = "❌ No hay suficientes juegos buenos y malos.";
+      // Filtrar por género si hay uno seleccionado
+      const base = generoSeleccionado
+        ? todosLosJuegos.filter(j => tieneGenero(j, generoSeleccionado))
+        : todosLosJuegos;
+
+      // Actualizar contador
+      contadorGenero.textContent = generoSeleccionado
+        ? `${base.length} juegos disponibles`
+        : "";
+
+      if (base.length < 10) {
+        info.textContent = `❌ Solo hay ${base.length} juegos con el género "${generoSeleccionado}". Necesitas al menos 10.`;
         return;
       }
 
+      const buenos      = base.filter(j => Number(j.rating) >= 85);
+      const malos       = base.filter(j => Number(j.rating) > 0 && Number(j.rating) <= 60);
+      const intermedios = base.filter(j => Number(j.rating) > 60 && Number(j.rating) < 85);
+
       const usados = new Set();
-      const seleccionBuenos      = tomarAleatorios(buenos, 2, usados).map(j => ({ ...j, categoria: "bueno" }));
-      const seleccionMalos       = tomarAleatorios(malos, 2, usados).map(j => ({ ...j, categoria: "malo" }));
-      let   seleccionIntermedios = tomarAleatorios(intermedios, 6, usados).map(j => ({ ...j, categoria: "intermedio" }));
+
+      // Si no hay suficientes buenos/malos, tomar aleatorios del total filtrado
+      const seleccionBuenos = buenos.length >= 2
+        ? tomarPonderados(buenos, 2, usados).map(j => ({ ...j, categoria: "bueno" }))
+        : tomarPonderados(base, 2, usados).map(j => ({ ...j, categoria: "bueno" }));
+
+      const seleccionMalos = malos.length >= 2
+        ? tomarPonderados(malos, 2, usados).map(j => ({ ...j, categoria: "malo" }))
+        : tomarPonderados(base, 2, usados).map(j => ({ ...j, categoria: "malo" }));
+
+      let seleccionIntermedios = tomarPonderados(intermedios, 6, usados).map(j => ({ ...j, categoria: "intermedio" }));
 
       if (seleccionIntermedios.length < 6) {
         const faltantes = 6 - seleccionIntermedios.length;
-        const respaldo = tomarAleatorios(todosLosJuegos, faltantes, usados).map(j => ({ ...j, categoria: "intermedio" }));
+        const respaldo  = tomarPonderados(base, faltantes, usados).map(j => ({ ...j, categoria: "intermedio" }));
         seleccionIntermedios = [...seleccionIntermedios, ...respaldo];
       }
 
-      const seleccionFinal = mezclarArreglo([...seleccionBuenos, ...seleccionMalos, ...seleccionIntermedios]).slice(0, 10);
+      let seleccionFinal = mezclarArreglo([
+        ...seleccionBuenos,
+        ...seleccionMalos,
+        ...seleccionIntermedios
+      ]).slice(0, 10);
+
+      // Garantizar: al menos 1 juego con owners > 2.999.999 y al menos 3 con owners > 999.999
+      const UMBRAL_MUY_POPULAR = 2999999;
+      const UMBRAL_POPULAR     = 999999;
+
+      function garantizarPopulares(seleccion, pool, usadosSet) {
+        let resultado = [...seleccion];
+
+        // Cuántos cumplen cada umbral
+        const muyPop = resultado.filter(j => Number(j["Estimated owners"]) > UMBRAL_MUY_POPULAR);
+        const pop    = resultado.filter(j => Number(j["Estimated owners"]) > UMBRAL_POPULAR);
+
+        // Extra pool disponible ordenado por owners desc
+        const extraPool = pool
+          .filter(j => !usadosSet.has(j))
+          .sort((a, b) => Number(b["Estimated owners"]) - Number(a["Estimated owners"]));
+
+        // Función para reemplazar el juego con menos owners por uno del extraPool
+        function reemplazarConUmbral(umbral) {
+          const candidato = extraPool.find(j => Number(j["Estimated owners"]) > umbral);
+          if (!candidato) return false;
+          // Quitar el de menor owners que NO cumpla el umbral
+          const idxReemplazar = resultado
+            .map((j, i) => ({ i, owners: Number(j["Estimated owners"]) }))
+            .filter(x => x.owners <= umbral)
+            .sort((a, b) => a.owners - b.owners)[0]?.i;
+          if (idxReemplazar === undefined) return false;
+          usadosSet.add(candidato);
+          extraPool.splice(extraPool.indexOf(candidato), 1);
+          resultado[idxReemplazar] = candidato;
+          return true;
+        }
+
+        // Garantizar 1 con owners > 2.999.999
+        if (muyPop.length < 1) reemplazarConUmbral(UMBRAL_MUY_POPULAR);
+
+        // Garantizar 3 con owners > 999.999 (incluye los muy populares)
+        const popActuales = resultado.filter(j => Number(j["Estimated owners"]) > UMBRAL_POPULAR);
+        let faltanPop = 3 - popActuales.length;
+        while (faltanPop > 0) {
+          if (!reemplazarConUmbral(UMBRAL_POPULAR)) break;
+          faltanPop--;
+        }
+
+        return resultado;
+      }
+
+      seleccionFinal = garantizarPopulares(seleccionFinal, base, usados);
 
       juegosTorre = seleccionFinal.map((juego, indice) => ({
-        nombre:   juego.Name,
-        precio:   Number(juego.Price) || 0,
-        rating:   Number(juego.rating) || 0,
-        owners:   Number(juego["Estimated owners"]) || 0,
+        nombre:    juego.Name,
+        precio:    Number(juego.Price) || 0,
+        rating:    Number(juego.rating) || 0,
+        owners:    Number(juego["Estimated owners"]) || 0,
+        playtime:  Number(juego["Average playtime forever"]) || 0,
+        tags:      juego.Tags || "",
         categoria: juego.categoria,
-        nivel:    indice + 1
+        nivel:     indice + 1
       }));
 
+      // Ordenar de menor a mayor precio (más caro abajo, más barato arriba)
+      juegosTorre.sort((a, b) => a.precio - b.precio);
+
       dibujarTorre();
-      info.innerHTML = "Sincroniza tu telefono e inclinalo para explorar datos";
+
+      const textoGenero = generoSeleccionado ? ` de <strong>${generoSeleccionado}</strong>` : "";
+      info.innerHTML = `Nueva torre lista con <strong>10 juegos</strong>${textoGenero}. Inclina el celular para explorarla.`;
       Protobject.Core.send({ torreActualizada: true }).to("sensor.html");
     }
 
+    // --- Dibujar torre ---
     function dibujarTorre() {
       limpiarTorre();
 
-      const altoMapa    = mapa.clientHeight;
-      const anchoMapa   = mapa.clientWidth;
-      const altoBloque  = 42;
-      const separacion  = 10;
-      const margen      = 8; 
-      const totalBloques = juegosTorre.length; // 10
-      const anchoBloque = Math.min(440, anchoMapa - 48);
-
-      const alturaTotal = totalBloques * altoBloque + (totalBloques - 1) * separacion;
-
-      const inicioY = (altoMapa - alturaTotal) / 2;
-      const baseX   = anchoMapa / 2;
+      const altoMapa     = mapa.clientHeight;
+      const anchoMapa    = mapa.clientWidth;
+      const altoBloque   = 42;
+      const separacion   = 10;
+      const totalBloques = juegosTorre.length;
+      const anchoBloque  = Math.min(440, anchoMapa - 48);
+      const alturaTotal  = totalBloques * altoBloque + (totalBloques - 1) * separacion;
+      const inicioY      = (altoMapa - alturaTotal) / 2;
+      const baseX        = anchoMapa / 2;
 
       juegosTorre.forEach((juego, indice) => {
         const y = inicioY + (totalBloques - 1 - indice) * (altoBloque + separacion) + altoBloque / 2;
@@ -328,11 +522,11 @@
         const nombre = document.createElement("span");
         const precio = document.createElement("span");
 
-        bloque.className = "bloque-juego";
+        bloque.className   = "bloque-juego";
         bloque.style.left  = `${x - anchoBloque / 2}px`;
         bloque.style.top   = `${y - altoBloque / 2}px`;
         bloque.style.width = `${anchoBloque}px`;
-        bloque.title = `${juego.nombre} · Rating ${juego.rating}% · Precio $${formatearPrecio(juego.precio)}`;
+        bloque.title       = `${juego.nombre} · Rating ${juego.rating}% · Precio $${formatearPrecio(juego.precio)}`;
 
         nombre.className   = "nombre-juego";
         nombre.textContent = `${10 - indice}. ${juego.nombre}`;
@@ -345,12 +539,14 @@
       });
     }
 
+    // --- Distancia al rectángulo ---
     function distanciaARectangulo(px, py, juego) {
       const dx = Math.max(Math.abs(px - juego.cx) - juego.w / 2, 0);
       const dy = Math.max(Math.abs(py - juego.cy) - juego.h / 2, 0);
       return Math.sqrt(dx * dx + dy * dy);
     }
 
+    // --- Audio ---
     async function activarSonido() {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (audioCtx.state === "suspended") await audioCtx.resume();
@@ -373,31 +569,29 @@
       osc.stop(audioCtx.currentTime + duracion);
     }
 
-    function sonarSegunPrecio(precio, rating = 50) {
-      const precioLimitado = Math.max(0, Math.min(precio, 60));
-      const frecuencia = mapear(precioLimitado, 0, 60, 180, 950);
-      const duracion   = mapear(precioLimitado, 0, 60, 0.05, 0.14);
-      const volumen    = Number(rating) >= 85 ? 0.55 : Number(rating) <= 60 ? 0.12 : 0.28;
+    function sonarSegunRating(rating = 50) {
+      const r          = Math.max(0, Math.min(Number(rating) || 0, 100));
+      const frecuencia = mapear(r, 0, 100, 180, 1200); // más rating = más agudo
+      const duracion   = mapear(r, 0, 100, 0.04, 0.18); // más rating = más largo
+      const volumen    = mapear(r, 0, 100, 0.08, 0.55); // más rating = más fuerte
       hacerClic(frecuencia, duracion, volumen);
     }
 
-    function patronVibracionSegunPrecio(precio, rating = 50) {
-      const precioLimitado = Math.max(0, Math.min(Number(precio) || 0, 60));
-      let patron;
-      if (precioLimitado <= 10)      patron = [55];
-      else if (precioLimitado <= 25) patron = [65, 75, 65];
-      else if (precioLimitado <= 45) patron = [90, 55, 90, 55, 90];
-      else                           patron = [130, 50, 130, 50, 130, 50, 250];
+    function patronVibracionSegunRating(rating = 50) {
+      const r = Math.max(0, Math.min(Number(rating) || 0, 100));
 
-      if (Number(rating) >= 85) return [...patron, 60, ...patron];
-      if (Number(rating) <= 60) return patron.map(v => Math.round(v * 0.5));
-      return patron;
+      // Más rating = vibraciones más largas y frecuentes
+      if (r >= 85) return [120, 40, 120, 40, 120, 40, 120]; // muy bueno: 4 pulsos fuertes
+      if (r >= 70) return [90, 50, 90, 50, 90];              // bueno: 3 pulsos medios
+      if (r >= 55) return [60, 60, 60];                      // intermedio: 2 pulsos suaves
+      return [30];                                            // malo: 1 pulso corto
     }
 
     function duracionTotalPatron(patron) {
       return patron.reduce((total, t) => total + t, 0);
     }
 
+    // --- Movimiento del cursor ---
     function procesarMovimiento(datos) {
       const x         = Number(datos.x);
       const yOriginal = Number(datos.y);
@@ -411,7 +605,7 @@
       const py = mapa.clientHeight * y / 100;
 
       let distanciaMinima = Infinity;
-      let juegoCercano = null;
+      let juegoCercano    = null;
 
       juegosTorre.forEach(juego => {
         const dist = distanciaARectangulo(px, py, juego);
@@ -423,12 +617,12 @@
         return;
       }
 
-      const ahora   = Date.now();
-      const patron  = patronVibracionSegunPrecio(juegoCercano.precio, juegoCercano.rating);
+      const ahora    = Date.now();
+      const patron   = patronVibracionSegunRating(juegoCercano.rating);
       const intervalo = Math.max(750, duracionTotalPatron(patron) + 180);
 
       if (ahora - ultimoClic > intervalo) {
-        sonarSegunPrecio(juegoCercano.precio, juegoCercano.rating);
+        sonarSegunRating(juegoCercano.rating);
         Protobject.Core.send({ vibrar: true, patron }).to("sensor.html");
         ultimoClic = ahora;
       }
@@ -443,10 +637,13 @@
       }
     }
 
+    // --- Eventos ---
     Protobject.Core.onReceived((datos) => {
       if (datos.accion === "nuevosJuegos") { generarNuevaTorre(); return; }
       procesarMovimiento(datos);
     });
+
+    selectorGenero.addEventListener("change", generarNuevaTorre);
 
     btnNuevaTorre.addEventListener("click", generarNuevaTorre);
     btnActivarSonido.addEventListener("click", activarSonido);

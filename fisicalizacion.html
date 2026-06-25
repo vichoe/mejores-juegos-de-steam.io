@@ -73,6 +73,7 @@
     #btnNuevaTorre { background: var(--cyan); }
     #btnActivarSonido { background: var(--dorado); }
 
+    /* Selector de género */
     .filtro-genero {
       display: flex;
       align-items: center;
@@ -491,7 +492,7 @@
       dibujarTorre();
 
       const textoGenero = generoSeleccionado ? ` de <strong>${generoSeleccionado}</strong>` : "";
-      info.innerHTML = `Nueva torre lista con <strong>10 juegos</strong>${textoGenero}. Inclina el celular para explorarla.`;
+      info.innerHTML = `Sincroniza tu telefono e inclinalo para explorar los juegos`;
       Protobject.Core.send({ torreActualizada: true }).to("sensor.html");
     }
 
@@ -569,22 +570,36 @@
       osc.stop(audioCtx.currentTime + duracion);
     }
 
+    function potenciaPorRating(r) {
+      if (r > 94)      return 1.00;
+      if (r >= 85)     return 0.80;
+      if (r >= 70)     return 0.60;
+      if (r >= 50)     return 0.45;
+      return 0.20;
+    }
+
     function sonarSegunRating(rating = 50) {
       const r          = Math.max(0, Math.min(Number(rating) || 0, 100));
-      const frecuencia = mapear(r, 0, 100, 180, 1200); // más rating = más agudo
-      const duracion   = mapear(r, 0, 100, 0.04, 0.18); // más rating = más largo
-      const volumen    = mapear(r, 0, 100, 0.08, 0.55); // más rating = más fuerte
+      const potencia   = potenciaPorRating(r);
+      const frecuencia = mapear(potencia, 0.20, 1.00, 180, 1200);
+      const duracion   = mapear(potencia, 0.20, 1.00, 0.04, 0.18);
+      const volumen    = mapear(potencia, 0.20, 1.00, 0.08, 0.55);
       hacerClic(frecuencia, duracion, volumen);
     }
 
     function patronVibracionSegunRating(rating = 50) {
-      const r = Math.max(0, Math.min(Number(rating) || 0, 100));
+      const r        = Math.max(0, Math.min(Number(rating) || 0, 100));
+      const potencia = potenciaPorRating(r);
+      const base     = 120; // duración máxima de pulso
 
-      // Más rating = vibraciones más largas y frecuentes
-      if (r >= 85) return [120, 40, 120, 40, 120, 40, 120]; // muy bueno: 4 pulsos fuertes
-      if (r >= 70) return [90, 50, 90, 50, 90];              // bueno: 3 pulsos medios
-      if (r >= 55) return [60, 60, 60];                      // intermedio: 2 pulsos suaves
-      return [30];                                            // malo: 1 pulso corto
+      const duracion = Math.round(base * potencia);
+      const pausa    = 40;
+
+      if (r > 94)  return [duracion, pausa, duracion, pausa, duracion, pausa, duracion]; // 4 pulsos
+      if (r >= 85) return [duracion, pausa, duracion, pausa, duracion];                  // 3 pulsos
+      if (r >= 70) return [duracion, pausa, duracion];                                   // 2 pulsos
+      if (r >= 50) return [duracion];                                                    // 1 pulso medio
+      return [Math.round(base * 0.20)];                                                  // 1 pulso corto
     }
 
     function duracionTotalPatron(patron) {
@@ -598,10 +613,10 @@
       if (!Number.isFinite(x) || !Number.isFinite(yOriginal)) return;
 
       const y = 100 - yOriginal;
-      cursor.style.left = `${x}%`;
+      cursor.style.left = `50%`;
       cursor.style.top  = `${y}%`;
 
-      const px = mapa.clientWidth  * x / 100;
+      const px = mapa.clientWidth  * 0.5;
       const py = mapa.clientHeight * y / 100;
 
       let distanciaMinima = Infinity;
@@ -643,6 +658,7 @@
       procesarMovimiento(datos);
     });
 
+    // Al cambiar el género, regenerar la torre automáticamente
     selectorGenero.addEventListener("change", generarNuevaTorre);
 
     btnNuevaTorre.addEventListener("click", generarNuevaTorre);

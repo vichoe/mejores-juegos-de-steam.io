@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fisicalización | Torre de Juegos</title>
   <style>
-
-
     :root {
       --fondo: #0b0e14;
       --panel: rgba(26, 28, 44, 0.92);
@@ -74,21 +72,6 @@
     #btnNuevaTorre { background: var(--cyan); }
     #btnActivarSonido { background: var(--dorado); }
 
-    .leyenda {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 11px 16px;
-      margin: 0 0 16px;
-      color: var(--suave);
-      font-size: 0.92rem;
-    }
-
-    .leyenda span { display: inline-flex; align-items: center; gap: 7px; }
-    .punto { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
-    .punto.bueno { background: #67e8c5; }
-    .punto.malo { background: #ff9a9e; }
-    .punto.medio { background: #f4df83; }
-
     #mapa {
       width: 100%;
       height: min(68vh, 590px);
@@ -132,6 +115,8 @@
       font-size: clamp(0.72rem, 1.9vw, 0.88rem);
       font-weight: 800;
       user-select: none;
+      /* Color único para todos */
+      background: linear-gradient(90deg, #00d2c8, #67e8d8);
     }
 
     .nombre-juego {
@@ -185,27 +170,19 @@
       .controles button { width: 100%; }
       #mapa::before { font-size: 0.74rem; }
     }
-    
   </style>
 </head>
 <body>
   <main>
     <h1>Torre de Juegos</h1>
     <p class="subtitulo">
-      Cada torre contiene 10 juegos aleatorios: al menos 2 muy bien valorados,
-      2 de baja valoración y otros juegos para comparar. Al acercarte a un juego,
-      su tono representa su precio: más caro, más agudo. 
+      Cada torre contiene 10 juegos aleatorios. Al acercarte a un juego,
+      su tono representa su precio: más caro, más agudo.
     </p>
 
     <div class="controles">
       <button id="btnNuevaTorre" type="button">🎲 Elegir otros 10 juegos</button>
       <button id="btnActivarSonido" type="button">🔊 Activar sonido</button>
-    </div>
-
-    <div class="leyenda" aria-label="Leyenda de valoración">
-      <span><i class="punto bueno"></i> Buena valoración (85% o más)</span>
-      <span><i class="punto malo"></i> Baja valoración (60% o menos)</span>
-      <span><i class="punto medio"></i> Valoración intermedia</span>
     </div>
 
     <div id="mapa" aria-label="Torre interactiva de diez juegos">
@@ -231,9 +208,9 @@
 
     function mezclarArreglo(arreglo) {
       const copia = [...arreglo];
-      for (let indice = copia.length - 1; indice > 0; indice--) {
-        const aleatorio = Math.floor(Math.random() * (indice + 1));
-        [copia[indice], copia[aleatorio]] = [copia[aleatorio], copia[indice]];
+      for (let i = copia.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copia[i], copia[j]] = [copia[j], copia[i]];
       }
       return copia;
     }
@@ -247,27 +224,24 @@
 
     function mapear(valor, entradaMin, entradaMax, salidaMin, salidaMax) {
       if (entradaMax === entradaMin) return salidaMin;
-      const proporcion = (valor - entradaMin) / (entradaMax - entradaMin);
-      return salidaMin + proporcion * (salidaMax - salidaMin);
+      return salidaMin + ((valor - entradaMin) / (entradaMax - entradaMin)) * (salidaMax - salidaMin);
     }
 
     function tomarAleatorios(arreglo, cantidad, usados) {
-      const disponibles = arreglo.filter(juego => !usados.has(juego));
+      const disponibles = arreglo.filter(j => !usados.has(j));
       const seleccion = mezclarArreglo(disponibles).slice(0, cantidad);
-      seleccion.forEach(juego => usados.add(juego));
+      seleccion.forEach(j => usados.add(j));
       return seleccion;
     }
 
     function limpiarTorre() {
-      mapa.querySelectorAll(".bloque-juego").forEach(bloque => bloque.remove());
+      mapa.querySelectorAll(".bloque-juego").forEach(b => b.remove());
     }
 
     async function cargarDatosTorre() {
       try {
         const respuesta = await fetch("datos/datos_radar.json");
-        if (!respuesta.ok) {
-          throw new Error("No se pudo leer datos/datos_radar.json.");
-        }
+        if (!respuesta.ok) throw new Error("No se pudo leer datos/datos_radar.json.");
 
         const datos = await respuesta.json();
         const nombresUsados = new Set();
@@ -276,19 +250,12 @@
           const nombre = typeof juego.Name === "string" ? juego.Name.trim() : "";
           const precio = Number(juego.Price);
           const rating = Number(juego.rating);
-
-          if (!nombre || nombresUsados.has(nombre) || !Number.isFinite(precio) || !Number.isFinite(rating)) {
-            return false;
-          }
-
+          if (!nombre || nombresUsados.has(nombre) || !Number.isFinite(precio) || !Number.isFinite(rating)) return false;
           nombresUsados.add(nombre);
           return true;
         });
 
-        if (todosLosJuegos.length < 10) {
-          throw new Error("No hay suficientes juegos válidos para crear la torre.");
-        }
-
+        if (todosLosJuegos.length < 10) throw new Error("No hay suficientes juegos válidos.");
         generarNuevaTorre();
       } catch (error) {
         info.textContent = `❌ Error al cargar los datos: ${error.message}`;
@@ -296,121 +263,81 @@
     }
 
     function generarNuevaTorre() {
-      const buenos = todosLosJuegos.filter(juego => Number(juego.rating) >= 85);
-      const malos = todosLosJuegos.filter(juego =>
-        Number(juego.rating) > 0 && Number(juego.rating) <= 60
-      );
-      const intermedios = todosLosJuegos.filter(juego =>
-        Number(juego.rating) > 60 && Number(juego.rating) < 85
-      );
+      const buenos      = todosLosJuegos.filter(j => Number(j.rating) >= 85);
+      const malos       = todosLosJuegos.filter(j => Number(j.rating) > 0 && Number(j.rating) <= 60);
+      const intermedios = todosLosJuegos.filter(j => Number(j.rating) > 60 && Number(j.rating) < 85);
 
       if (buenos.length < 2 || malos.length < 2) {
-        info.textContent = "❌ La base no tiene suficientes juegos buenos y malos para mantener la diversidad.";
+        info.textContent = "❌ No hay suficientes juegos buenos y malos.";
         return;
       }
 
       const usados = new Set();
-      const seleccionBuenos = tomarAleatorios(buenos, 2, usados).map(juego => ({
-        ...juego,
-        categoria: "bueno"
-      }));
-      const seleccionMalos = tomarAleatorios(malos, 2, usados).map(juego => ({
-        ...juego,
-        categoria: "malo"
-      }));
-
-      let seleccionIntermedios = tomarAleatorios(intermedios, 6, usados).map(juego => ({
-        ...juego,
-        categoria: "intermedio"
-      }));
+      const seleccionBuenos      = tomarAleatorios(buenos, 2, usados).map(j => ({ ...j, categoria: "bueno" }));
+      const seleccionMalos       = tomarAleatorios(malos, 2, usados).map(j => ({ ...j, categoria: "malo" }));
+      let   seleccionIntermedios = tomarAleatorios(intermedios, 6, usados).map(j => ({ ...j, categoria: "intermedio" }));
 
       if (seleccionIntermedios.length < 6) {
         const faltantes = 6 - seleccionIntermedios.length;
-        const respaldo = tomarAleatorios(todosLosJuegos, faltantes, usados).map(juego => ({
-          ...juego,
-          categoria: "intermedio"
-        }));
+        const respaldo = tomarAleatorios(todosLosJuegos, faltantes, usados).map(j => ({ ...j, categoria: "intermedio" }));
         seleccionIntermedios = [...seleccionIntermedios, ...respaldo];
       }
 
-      const seleccionFinal = mezclarArreglo([
-        ...seleccionBuenos,
-        ...seleccionMalos,
-        ...seleccionIntermedios
-      ]).slice(0, 10);
+      const seleccionFinal = mezclarArreglo([...seleccionBuenos, ...seleccionMalos, ...seleccionIntermedios]).slice(0, 10);
 
       juegosTorre = seleccionFinal.map((juego, indice) => ({
-        nombre: juego.Name,
-        precio: Number(juego.Price) || 0,
-        rating: Number(juego.rating) || 0,
-        owners: Number(juego["Estimated owners"]) || 0,
+        nombre:   juego.Name,
+        precio:   Number(juego.Price) || 0,
+        rating:   Number(juego.rating) || 0,
+        owners:   Number(juego["Estimated owners"]) || 0,
         categoria: juego.categoria,
-        nivel: indice + 1,
-        desplazamiento: Math.round(Math.random() * 36 - 18)
+        nivel:    indice + 1
       }));
 
       dibujarTorre();
-      info.innerHTML = "Nueva torre lista: <strong>2 juegos muy bien valorados</strong>, " +
-        "<strong>2 de baja valoración</strong> y 6 juegos intermedios o aleatorios.";
-
+      info.innerHTML = "Sincroniza tu telefono e inclinalo para explorar datos";
       Protobject.Core.send({ torreActualizada: true }).to("sensor.html");
-    }
-
-    function aparienciaCategoria(categoria) {
-      if (categoria === "bueno") {
-        return {
-          fondo: "linear-gradient(90deg, #49d5b4, #9af3d5)",
-          etiqueta: "Buena valoración"
-        };
-      }
-
-      if (categoria === "malo") {
-        return {
-          fondo: "linear-gradient(90deg, #ff7f8c, #ffc1b9)",
-          etiqueta: "Baja valoración"
-        };
-      }
-
-      return {
-        fondo: "linear-gradient(90deg, #e7c85b, #fff1a5)",
-        etiqueta: "Valoración intermedia"
-      };
     }
 
     function dibujarTorre() {
       limpiarTorre();
 
-      const anchoBloque = Math.min(440, mapa.clientWidth - 48);
-      const altoBloque = 42;
-      const separacion = 10;
-      const baseX = mapa.clientWidth / 2;
-      const baseY = mapa.clientHeight - 38;
+      const altoMapa    = mapa.clientHeight;
+      const anchoMapa   = mapa.clientWidth;
+      const altoBloque  = 42;
+      const separacion  = 10;
+      const margen      = 8; 
+      const totalBloques = juegosTorre.length; // 10
+      const anchoBloque = Math.min(440, anchoMapa - 48);
+
+      const alturaTotal = totalBloques * altoBloque + (totalBloques - 1) * separacion;
+
+      const inicioY = (altoMapa - alturaTotal) / 2;
+      const baseX   = anchoMapa / 2;
 
       juegosTorre.forEach((juego, indice) => {
+        const y = inicioY + (totalBloques - 1 - indice) * (altoBloque + separacion) + altoBloque / 2;
         const x = baseX;
-        const y = baseY - indice * (altoBloque + separacion);
 
         juego.cx = x;
         juego.cy = y;
-        juego.w = anchoBloque;
-        juego.h = altoBloque;
+        juego.w  = anchoBloque;
+        juego.h  = altoBloque;
 
-        const apariencia = aparienciaCategoria(juego.categoria);
         const bloque = document.createElement("div");
         const nombre = document.createElement("span");
         const precio = document.createElement("span");
 
         bloque.className = "bloque-juego";
-        bloque.style.left = `${x - anchoBloque / 2}px`;
-        bloque.style.top = `${y - altoBloque / 2}px`;
+        bloque.style.left  = `${x - anchoBloque / 2}px`;
+        bloque.style.top   = `${y - altoBloque / 2}px`;
         bloque.style.width = `${anchoBloque}px`;
-        bloque.style.background = apariencia.fondo;
-        bloque.title = `${juego.nombre} · ${apariencia.etiqueta} · Rating ${juego.rating}% · Precio $${formatearPrecio(juego.precio)}`;
+        bloque.title = `${juego.nombre} · Rating ${juego.rating}% · Precio $${formatearPrecio(juego.precio)}`;
 
-        nombre.className = "nombre-juego";
+        nombre.className   = "nombre-juego";
         nombre.textContent = `${10 - indice}. ${juego.nombre}`;
 
-        precio.className = "precio-juego";
+        precio.className   = "precio-juego";
         precio.textContent = `$${formatearPrecio(juego.precio)}`;
 
         bloque.append(nombre, precio);
@@ -425,91 +352,70 @@
     }
 
     async function activarSonido() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-
-      if (audioCtx.state === "suspended") {
-        await audioCtx.resume();
-      }
-
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === "suspended") await audioCtx.resume();
       btnActivarSonido.textContent = "✓ Sonido activado";
-      info.textContent = "Sonido activado. Ahora mueve el celular cerca de un bloque.";
+      info.textContent = "Sonido activado. Mueve el celular cerca de un bloque.";
     }
 
-    function hacerClic(frecuencia, duracion) {
+    function hacerClic(frecuencia, duracion, volumen = 0.28) {
       if (!audioCtx || audioCtx.state !== "running") return;
-
-      const oscilador = audioCtx.createOscillator();
-      const ganancia = audioCtx.createGain();
-
-      oscilador.connect(ganancia);
-      ganancia.connect(audioCtx.destination);
-      oscilador.type = "triangle";
-      oscilador.frequency.setValueAtTime(frecuencia, audioCtx.currentTime);
-
-      ganancia.gain.setValueAtTime(0.0001, audioCtx.currentTime);
-      ganancia.gain.exponentialRampToValueAtTime(0.28, audioCtx.currentTime + 0.01);
-      ganancia.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duracion);
-
-      oscilador.start();
-      oscilador.stop(audioCtx.currentTime + duracion);
+      const osc  = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(frecuencia, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(volumen, audioCtx.currentTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duracion);
+      osc.start();
+      osc.stop(audioCtx.currentTime + duracion);
     }
 
-    function sonarSegunPrecio(precio) {
+    function sonarSegunPrecio(precio, rating = 50) {
       const precioLimitado = Math.max(0, Math.min(precio, 60));
       const frecuencia = mapear(precioLimitado, 0, 60, 180, 950);
-      const duracion = mapear(precioLimitado, 0, 60, 0.05, 0.14);
-      hacerClic(frecuencia, duracion);
+      const duracion   = mapear(precioLimitado, 0, 60, 0.05, 0.14);
+      const volumen    = Number(rating) >= 85 ? 0.55 : Number(rating) <= 60 ? 0.12 : 0.28;
+      hacerClic(frecuencia, duracion, volumen);
     }
-    function patronVibracionSegunPrecio(precio) {
+
+    function patronVibracionSegunPrecio(precio, rating = 50) {
       const precioLimitado = Math.max(0, Math.min(Number(precio) || 0, 60));
+      let patron;
+      if (precioLimitado <= 10)      patron = [55];
+      else if (precioLimitado <= 25) patron = [65, 75, 65];
+      else if (precioLimitado <= 45) patron = [90, 55, 90, 55, 90];
+      else                           patron = [130, 50, 130, 50, 130, 50, 250];
 
-  // Juegos gratis o baratos: 1 vibración corta
-      if (precioLimitado <= 10) {
-        return [55];
-      }
-
-  // Juegos de precio medio-bajo: 2 vibraciones cortas
-      if (precioLimitado <= 25) {
-        return [65, 75, 65];
-      }
-
-  // Juegos de precio medio-alto: 3 vibraciones
-      if (precioLimitado <= 45) {
-        return [90, 55, 90, 55, 90];
-      }
-
-  // Juegos caros: patrón largo y notorio
-      return [130, 50, 130, 50, 130, 50, 250];
+      if (Number(rating) >= 85) return [...patron, 60, ...patron];
+      if (Number(rating) <= 60) return patron.map(v => Math.round(v * 0.5));
+      return patron;
     }
 
-  function duracionTotalPatron(patron) {
-    return patron.reduce((total, tramo) => total + tramo, 0);
-}
+    function duracionTotalPatron(patron) {
+      return patron.reduce((total, t) => total + t, 0);
+    }
 
     function procesarMovimiento(datos) {
-      const x = Number(datos.x);
+      const x         = Number(datos.x);
       const yOriginal = Number(datos.y);
-
       if (!Number.isFinite(x) || !Number.isFinite(yOriginal)) return;
 
       const y = 100 - yOriginal;
       cursor.style.left = `${x}%`;
-      cursor.style.top = `${y}%`;
+      cursor.style.top  = `${y}%`;
 
-      const px = mapa.clientWidth * x / 100;
+      const px = mapa.clientWidth  * x / 100;
       const py = mapa.clientHeight * y / 100;
 
       let distanciaMinima = Infinity;
       let juegoCercano = null;
 
       juegosTorre.forEach(juego => {
-        const distancia = distanciaARectangulo(px, py, juego);
-        if (distancia < distanciaMinima) {
-          distanciaMinima = distancia;
-          juegoCercano = juego;
-        }
+        const dist = distanciaARectangulo(px, py, juego);
+        if (dist < distanciaMinima) { distanciaMinima = dist; juegoCercano = juego; }
       });
 
       if (!juegoCercano || distanciaMinima >= 85) {
@@ -517,32 +423,20 @@
         return;
       }
 
-  const ahora = Date.now();
+      const ahora   = Date.now();
+      const patron  = patronVibracionSegunPrecio(juegoCercano.precio, juegoCercano.rating);
+      const intervalo = Math.max(750, duracionTotalPatron(patron) + 180);
 
-  const patron = patronVibracionSegunPrecio(juegoCercano.precio);
-
-// Evita que una vibración nueva corte la anterior antes de terminar.
-  const intervalo = Math.max(
-    750,
-    duracionTotalPatron(patron) + 180
-  );
-
-  if (ahora - ultimoClic > intervalo) {
-    sonarSegunPrecio(juegoCercano.precio);
-
-    Protobject.Core.send({
-      vibrar: true,
-      patron: patron
-    }).to("sensor.html");
-
-    ultimoClic = ahora;
-  }
+      if (ahora - ultimoClic > intervalo) {
+        sonarSegunPrecio(juegoCercano.precio, juegoCercano.rating);
+        Protobject.Core.send({ vibrar: true, patron }).to("sensor.html");
+        ultimoClic = ahora;
+      }
 
       if (distanciaMinima < 9) {
         info.innerHTML = `¡Encontraste <strong>${juegoCercano.nombre}</strong>! ` +
           `Precio: <strong>$${formatearPrecio(juegoCercano.precio)}</strong> · ` +
-          `Rating: <strong>${juegoCercano.rating}%</strong>. ` +
-          "El tono representa el precio, no el rating.";
+          `Rating: <strong>${juegoCercano.rating}%</strong>.`;
       } else {
         info.innerHTML = `Cerca de <strong>${juegoCercano.nombre}</strong> · ` +
           `Precio: $${formatearPrecio(juegoCercano.precio)} · Rating: ${juegoCercano.rating}%.`;
@@ -550,11 +444,7 @@
     }
 
     Protobject.Core.onReceived((datos) => {
-      if (datos.accion === "nuevosJuegos") {
-        generarNuevaTorre();
-        return;
-      }
-
+      if (datos.accion === "nuevosJuegos") { generarNuevaTorre(); return; }
       procesarMovimiento(datos);
     });
 
@@ -562,10 +452,7 @@
     btnActivarSonido.addEventListener("click", activarSonido);
     window.addEventListener("resize", dibujarTorre);
 
-
     cargarDatosTorre();
-
-    
   </script>
 </body>
 </html>

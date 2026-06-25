@@ -271,7 +271,6 @@
     let audioCtx       = null;
     let ultimoClic     = 0;
 
-    // --- Utilidades ---
     function mezclarArreglo(arreglo) {
       const copia = [...arreglo];
       for (let i = copia.length - 1; i > 0; i--) {
@@ -303,11 +302,10 @@
       const maxOwners   = Math.max(...disponibles.map(j => Number(j["Estimated owners"]) || 0)) || 1;
       const maxPlaytime = Math.max(...disponibles.map(j => Number(j["Average playtime forever"]) || 0)) || 1;
 
-      // Peso = 70% owners + 30% playtime, normalizado
       const pesos = disponibles.map(j => {
         const wOwners   = (Number(j["Estimated owners"]) || 0) / maxOwners;
         const wPlaytime = (Number(j["Average playtime forever"]) || 0) / maxPlaytime;
-        return 0.7 * wOwners + 0.3 * wPlaytime + 0.05; // +0.05 para que nadie tenga peso 0
+        return 0.7 * wOwners + 0.3 * wPlaytime + 0.05; 
       });
 
       const seleccion = [];
@@ -478,7 +476,6 @@
       Protobject.Core.send({ torreActualizada: true }).to("sensor.html");
     }
 
-    // --- Dibujar torre ---
     function dibujarTorre() {
       limpiarTorre();
 
@@ -522,14 +519,12 @@
       });
     }
 
-    // --- Distancia al rectángulo ---
     function distanciaARectangulo(px, py, juego) {
       const dx = Math.max(Math.abs(px - juego.cx) - juego.w / 2, 0);
       const dy = Math.max(Math.abs(py - juego.cy) - juego.h / 2, 0);
       return Math.sqrt(dx * dx + dy * dy);
     }
 
-    // --- Audio ---
     async function activarSonido() {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (audioCtx.state === "suspended") await audioCtx.resume();
@@ -570,7 +565,7 @@
     function patronVibracionSegunRating(rating = 50) {
       const r        = Math.max(0, Math.min(Number(rating) || 0, 100));
       const potencia = potenciaPorRating(r);
-      const base     = 120; // duración máxima de pulso
+      const base     = 120;
 
       const duracion = Math.round(base * potencia);
       const pausa    = 40;
@@ -586,7 +581,6 @@
       return patron.reduce((total, t) => total + t, 0);
     }
 
-    // --- Movimiento del cursor ---
     function procesarMovimiento(datos) {
       const x         = Number(datos.x);
       const yOriginal = Number(datos.y);
@@ -614,7 +608,7 @@
 
       const ahora    = Date.now();
       const patron   = patronVibracionSegunRating(juegoCercano.rating);
-      const intervalo = Math.max(750, duracionTotalPatron(patron) + 180);
+      const intervalo = Math.max(mapear(potenciaPorRating(juegoCercano.rating), 0.20, 1.00, 750, 200), duracionTotalPatron(patron) + 180);
 
       if (ahora - ultimoClic > intervalo) {
         sonarSegunRating(juegoCercano.rating);
@@ -632,8 +626,6 @@
       }
     }
 
-    // --- Eventos ---
-    // Activar AudioContext al primer gesto del usuario (requerido por navegadores)
     document.addEventListener("click", activarSonido, { once: true });
     document.addEventListener("touchstart", activarSonido, { once: true });
 
@@ -642,7 +634,6 @@
       procesarMovimiento(datos);
     });
 
-    // Al cambiar el género, regenerar la torre automáticamente
     selectorGenero.addEventListener("change", generarNuevaTorre);
 
     btnNuevaTorre.addEventListener("click", generarNuevaTorre);
